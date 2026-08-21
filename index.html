@@ -14,6 +14,7 @@
       justify-content: center;
       align-items: center;
       height: 100vh;
+      height: 100dvh;
       width: 100vw;
     }
     #game-container {
@@ -21,6 +22,7 @@
       width: 100%;
       max-width: 900px;
       height: 100vh;
+      height: 100dvh;
       max-height: 600px;
       background: #0f0f1a;
       overflow: hidden;
@@ -203,6 +205,7 @@
       -webkit-backdrop-filter: blur(4px);
       box-shadow: 0 4px 15px rgba(0,0,0,0.3);
       transition: transform 0.05s, background 0.15s;
+      position: relative;
     }
     .touch-punch:active, .touch-punch.pressed {
       background: rgba(255,107,107,0.6);
@@ -256,7 +259,7 @@
       margin-bottom: 15px;
     }
     @media (min-width: 768px) {
-      .touch-controls { display: none; }
+      .touch-controls { display: none !important; }
       .controls-hint { bottom: 20px; }
     }
   </style>
@@ -351,6 +354,11 @@
     const enemyHealthBar = document.getElementById('enemyHealth');
     const enemyNameEl = document.getElementById('enemyName');
     
+    // Scale helpers for responsive sizing
+    function getScale() {
+      return Math.min(canvas.width / 400, canvas.height / 300, 1.5);
+    }
+    
     // Resize canvas
     function resize() {
       canvas.width = container.clientWidth;
@@ -369,11 +377,6 @@
     // Input
     const keys = {};
     const touchState = { left: false, right: false, punch: false, block: false };
-    
-    // Scale helpers for responsive sizing
-    function getScale() {
-      return Math.min(canvas.width / 400, canvas.height / 300, 1.5);
-    }
     
     // Fighter class
     class Fighter {
@@ -941,31 +944,48 @@
       keys[e.key] = false;
     });
     
-    // Touch controls
+    // Touch controls with visual feedback
     const btnLeft = document.getElementById('btnLeft');
     const btnRight = document.getElementById('btnRight');
     const btnPunch = document.getElementById('btnPunch');
     const btnBlock = document.getElementById('btnBlock');
     
-    btnLeft.addEventListener('touchstart', e => { e.preventDefault(); touchState.left = true; });
-    btnLeft.addEventListener('touchend', e => { e.preventDefault(); touchState.left = false; });
-    btnLeft.addEventListener('mousedown', () => touchState.left = true);
-    btnLeft.addEventListener('mouseup', () => touchState.left = false);
+    function setPressed(el, pressed) {
+      if (pressed) el.classList.add('pressed');
+      else el.classList.remove('pressed');
+    }
     
-    btnRight.addEventListener('touchstart', e => { e.preventDefault(); touchState.right = true; });
-    btnRight.addEventListener('touchend', e => { e.preventDefault(); touchState.right = false; });
-    btnRight.addEventListener('mousedown', () => touchState.right = true);
-    btnRight.addEventListener('mouseup', () => touchState.right = false);
+    // Left button
+    btnLeft.addEventListener('touchstart', e => { e.preventDefault(); touchState.left = true; setPressed(btnLeft, true); });
+    btnLeft.addEventListener('touchend', e => { e.preventDefault(); touchState.left = false; setPressed(btnLeft, false); });
+    btnLeft.addEventListener('touchcancel', e => { touchState.left = false; setPressed(btnLeft, false); });
+    btnLeft.addEventListener('mousedown', () => { touchState.left = true; setPressed(btnLeft, true); });
+    btnLeft.addEventListener('mouseup', () => { touchState.left = false; setPressed(btnLeft, false); });
+    btnLeft.addEventListener('mouseleave', () => { touchState.left = false; setPressed(btnLeft, false); });
     
-    btnPunch.addEventListener('touchstart', e => { e.preventDefault(); touchState.punch = true; });
-    btnPunch.addEventListener('touchend', e => { e.preventDefault(); touchState.punch = false; });
-    btnPunch.addEventListener('mousedown', () => touchState.punch = true);
-    btnPunch.addEventListener('mouseup', () => touchState.punch = false);
+    // Right button
+    btnRight.addEventListener('touchstart', e => { e.preventDefault(); touchState.right = true; setPressed(btnRight, true); });
+    btnRight.addEventListener('touchend', e => { e.preventDefault(); touchState.right = false; setPressed(btnRight, false); });
+    btnRight.addEventListener('touchcancel', e => { touchState.right = false; setPressed(btnRight, false); });
+    btnRight.addEventListener('mousedown', () => { touchState.right = true; setPressed(btnRight, true); });
+    btnRight.addEventListener('mouseup', () => { touchState.right = false; setPressed(btnRight, false); });
+    btnRight.addEventListener('mouseleave', () => { touchState.right = false; setPressed(btnRight, false); });
     
-    btnBlock.addEventListener('touchstart', e => { e.preventDefault(); touchState.block = true; });
-    btnBlock.addEventListener('touchend', e => { e.preventDefault(); touchState.block = false; });
-    btnBlock.addEventListener('mousedown', () => touchState.block = true);
-    btnBlock.addEventListener('mouseup', () => touchState.block = false);
+    // Punch button
+    btnPunch.addEventListener('touchstart', e => { e.preventDefault(); touchState.punch = true; setPressed(btnPunch, true); });
+    btnPunch.addEventListener('touchend', e => { e.preventDefault(); touchState.punch = false; setPressed(btnPunch, false); });
+    btnPunch.addEventListener('touchcancel', e => { touchState.punch = false; setPressed(btnPunch, false); });
+    btnPunch.addEventListener('mousedown', () => { touchState.punch = true; setPressed(btnPunch, true); });
+    btnPunch.addEventListener('mouseup', () => { touchState.punch = false; setPressed(btnPunch, false); });
+    btnPunch.addEventListener('mouseleave', () => { touchState.punch = false; setPressed(btnPunch, false); });
+    
+    // Block button
+    btnBlock.addEventListener('touchstart', e => { e.preventDefault(); touchState.block = true; setPressed(btnBlock, true); });
+    btnBlock.addEventListener('touchend', e => { e.preventDefault(); touchState.block = false; setPressed(btnBlock, false); });
+    btnBlock.addEventListener('touchcancel', e => { touchState.block = false; setPressed(btnBlock, false); });
+    btnBlock.addEventListener('mousedown', () => { touchState.block = true; setPressed(btnBlock, true); });
+    btnBlock.addEventListener('mouseup', () => { touchState.block = false; setPressed(btnBlock, false); });
+    btnBlock.addEventListener('mouseleave', () => { touchState.block = false; setPressed(btnBlock, false); });
     
     // Prevent context menu on mobile
     window.addEventListener('contextmenu', e => e.preventDefault());

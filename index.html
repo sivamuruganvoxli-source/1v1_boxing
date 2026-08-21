@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Knockout Boxing - Arcade Game</title>
+    <title>Punch Out - Boxing Game</title>
     <style>
         * {
             margin: 0;
@@ -28,8 +28,8 @@
             position: relative;
             width: 100vw;
             height: 100vh;
-            max-width: 1280px;
-            max-height: 720px;
+            max-width: 960px;
+            max-height: 540px;
             background: #1a1a2e;
             overflow: hidden;
         }
@@ -38,121 +38,6 @@
             display: block;
             width: 100%;
             height: 100%;
-        }
-
-        /* UI Overlay */
-        #uiOverlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            z-index: 10;
-        }
-
-        .health-bar-container {
-            position: absolute;
-            top: 15px;
-            width: 280px;
-            height: 30px;
-            background: rgba(0,0,0,0.6);
-            border: 3px solid #fff;
-            border-radius: 15px;
-            overflow: hidden;
-        }
-
-        #playerHealthContainer {
-            left: 15px;
-            border-color: #4fc3f7;
-        }
-
-        #enemyHealthContainer {
-            right: 15px;
-            border-color: #ff5252;
-        }
-
-        .health-bar {
-            height: 100%;
-            transition: width 0.3s ease;
-            border-radius: 12px;
-        }
-
-        #playerHealth {
-            width: 100%;
-            background: linear-gradient(90deg, #0277bd, #4fc3f7);
-        }
-
-        #enemyHealth {
-            width: 100%;
-            background: linear-gradient(90deg, #c62828, #ff5252);
-            float: right;
-        }
-
-        .fighter-name {
-            position: absolute;
-            top: 48px;
-            font-size: 14px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        }
-
-        #playerName {
-            left: 20px;
-            color: #4fc3f7;
-        }
-
-        #enemyName {
-            right: 20px;
-            color: #ff5252;
-        }
-
-        .stamina-bar {
-            position: absolute;
-            top: 68px;
-            width: 200px;
-            height: 8px;
-            background: rgba(0,0,0,0.5);
-            border-radius: 4px;
-            overflow: hidden;
-        }
-
-        #playerStamina {
-            left: 15px;
-        }
-
-        #enemyStamina {
-            right: 15px;
-        }
-
-        .stamina-fill {
-            height: 100%;
-            background: #66bb6a;
-            border-radius: 4px;
-            transition: width 0.2s;
-        }
-
-        #timer {
-            position: absolute;
-            top: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 36px;
-            font-weight: bold;
-            color: #fff;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
-            font-family: 'Courier New', monospace;
-        }
-
-        #roundDisplay {
-            position: absolute;
-            top: 55px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 16px;
-            color: #ffd700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
         }
 
         /* Screens */
@@ -166,261 +51,227 @@
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            background: rgba(0,0,0,0.85);
             z-index: 20;
-            pointer-events: auto;
-            transition: opacity 0.5s;
+            transition: opacity 0.3s;
         }
 
         .screen.hidden {
-            opacity: 0;
-            pointer-events: none;
+            display: none !important;
         }
 
         #titleScreen {
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            background: linear-gradient(180deg, #1a1a2e 0%, #0f3460 100%);
         }
 
         .game-title {
-            font-size: clamp(36px, 8vw, 72px);
+            font-size: clamp(32px, 7vw, 56px);
             font-weight: 900;
             color: #ffd700;
-            text-shadow: 4px 4px 0 #c62828, 8px 8px 0 #000;
-            margin-bottom: 10px;
+            text-shadow: 3px 3px 0 #c62828, 6px 6px 0 #000;
+            margin-bottom: 8px;
             text-align: center;
-            letter-spacing: 3px;
-            animation: titlePulse 2s ease-in-out infinite;
+            letter-spacing: 2px;
+            animation: pulse 2s ease-in-out infinite;
         }
 
-        @keyframes titlePulse {
+        @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
         }
 
         .game-subtitle {
-            font-size: clamp(14px, 3vw, 24px);
-            color: #fff;
-            margin-bottom: 40px;
-            text-align: center;
-            opacity: 0.9;
+            font-size: clamp(12px, 2.5vw, 18px);
+            color: #ccc;
+            margin-bottom: 30px;
         }
 
-        .menu-btn {
-            padding: 15px 50px;
-            margin: 10px;
-            font-size: clamp(16px, 3vw, 24px);
+        .btn {
+            padding: 12px 40px;
+            margin: 8px;
+            font-size: clamp(16px, 3vw, 22px);
             font-weight: bold;
             border: 3px solid #ffd700;
-            background: transparent;
+            background: rgba(0,0,0,0.5);
             color: #ffd700;
             cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s;
+            border-radius: 8px;
+            transition: all 0.2s;
             text-transform: uppercase;
             letter-spacing: 2px;
-            pointer-events: auto;
         }
 
-        .menu-btn:hover, .menu-btn:active {
+        .btn:hover, .btn:active {
             background: #ffd700;
             color: #1a1a2e;
             transform: scale(1.05);
         }
 
-        .controls-info {
-            margin-top: 30px;
-            color: #aaa;
-            font-size: clamp(10px, 2vw, 14px);
-            text-align: center;
-            line-height: 1.8;
-        }
-
-        .controls-info kbd {
-            display: inline-block;
-            padding: 2px 8px;
-            background: #333;
-            border: 1px solid #666;
-            border-radius: 4px;
-            color: #fff;
-            font-family: monospace;
-            margin: 0 2px;
-        }
-
-        /* Game Over Screen */
-        #gameOverScreen .result-title {
-            font-size: clamp(32px, 7vw, 64px);
-            font-weight: 900;
-            margin-bottom: 20px;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
-        }
-
-        .win { color: #ffd700; }
-        .lose { color: #ff5252; }
-        .draw { color: #aaa; }
-
-        #finalScore {
-            font-size: clamp(18px, 4vw, 28px);
-            color: #fff;
-            margin-bottom: 30px;
-        }
-
-        /* Combo display */
-        #comboDisplay {
-            position: absolute;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            color: #ffd700;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-
-        /* Damage numbers */
-        .damage-number {
-            position: absolute;
-            font-size: 28px;
-            font-weight: bold;
-            color: #ff5252;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.9);
-            pointer-events: none;
-            animation: damageFloat 1s ease-out forwards;
-            z-index: 15;
-        }
-
-        @keyframes damageFloat {
-            0% { opacity: 1; transform: translateY(0) scale(1); }
-            100% { opacity: 0; transform: translateY(-60px) scale(1.5); }
-        }
-
-        /* KO flash */
-        #koFlash {
+        /* HUD */
+        #hud {
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: #fff;
-            opacity: 0;
             pointer-events: none;
-            z-index: 12;
-            transition: opacity 0.1s;
+            z-index: 10;
+            display: none;
         }
 
-        /* Touch controls */
+        #hud.active {
+            display: block;
+        }
+
+        .bar-container {
+            position: absolute;
+            top: 10px;
+            width: 200px;
+            height: 20px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #fff;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        #pHealthC { left: 10px; border-color: #4fc3f7; }
+        #eHealthC { right: 10px; border-color: #ff5252; }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.2s;
+        }
+
+        #pHealth { width: 100%; background: linear-gradient(90deg, #0277bd, #4fc3f7); }
+        #eHealth { width: 100%; background: linear-gradient(90deg, #c62828, #ff5252); float: right; }
+
+        .name {
+            position: absolute;
+            top: 32px;
+            font-size: 12px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        #pName { left: 12px; color: #4fc3f7; }
+        #eName { right: 12px; color: #ff5252; }
+
+        #timer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 28px;
+            font-weight: bold;
+            color: #fff;
+            text-shadow: 2px 2px 4px #000;
+            font-family: monospace;
+        }
+
+        #roundText {
+            position: absolute;
+            top: 42px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            color: #ffd700;
+        }
+
+        /* Touch Controls */
         #touchControls {
             position: absolute;
             bottom: 0;
             left: 0;
             width: 100%;
-            height: 180px;
+            height: 140px;
             display: none;
             z-index: 15;
             pointer-events: auto;
         }
 
-        .touch-btn {
+        .tbtn {
             position: absolute;
-            width: 80px;
-            height: 80px;
+            width: 70px;
+            height: 70px;
             border-radius: 50%;
-            background: rgba(255,255,255,0.15);
-            border: 2px solid rgba(255,255,255,0.4);
+            background: rgba(255,255,255,0.12);
+            border: 2px solid rgba(255,255,255,0.3);
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 28px;
+            font-size: 24px;
             color: #fff;
-            touch-action: manipulation;
+            cursor: pointer;
         }
 
-        .touch-btn:active {
-            background: rgba(255,255,255,0.35);
+        .tbtn:active {
+            background: rgba(255,255,255,0.3);
             transform: scale(0.95);
         }
 
-        #btnLeft { bottom: 20px; left: 20px; }
-        #btnRight { bottom: 20px; left: 110px; }
-        #btnPunch { bottom: 20px; right: 20px; background: rgba(255,82,82,0.25); border-color: rgba(255,82,82,0.5); }
-        #btnBlock { bottom: 20px; right: 110px; background: rgba(79,195,247,0.25); border-color: rgba(79,195,247,0.5); }
-        #btnDodge { bottom: 110px; right: 20px; background: rgba(255,215,0,0.25); border-color: rgba(255,215,0,0.5); }
+        #tbLeft { bottom: 15px; left: 15px; }
+        #tbRight { bottom: 15px; left: 95px; }
+        #tbPunch { bottom: 15px; right: 15px; background: rgba(255,50,50,0.2); border-color: rgba(255,100,100,0.4); }
+        #tbBlock { bottom: 15px; right: 95px; background: rgba(50,150,255,0.2); border-color: rgba(100,180,255,0.4); }
+        #tbDodge { bottom: 95px; right: 15px; background: rgba(255,200,0,0.2); border-color: rgba(255,220,50,0.4); }
 
-        /* Mobile detection */
         @media (hover: none) and (pointer: coarse) {
-            #touchControls {
-                display: block;
-            }
-            .controls-info .desktop-only {
-                display: none;
-            }
+            #touchControls { display: block; }
         }
 
-        /* Particle effects */
-        .particle {
-            position: absolute;
-            pointer-events: none;
-            border-radius: 50%;
-            z-index: 14;
+        .controls-text {
+            margin-top: 20px;
+            color: #888;
+            font-size: 11px;
+            text-align: center;
+            line-height: 1.8;
         }
 
-        /* Notification */
+        .key {
+            display: inline-block;
+            padding: 1px 6px;
+            background: #333;
+            border: 1px solid #555;
+            border-radius: 3px;
+            color: #ffd700;
+            font-family: monospace;
+            font-size: 11px;
+        }
+
         #notification {
             position: absolute;
-            top: 50%;
+            top: 40%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: clamp(24px, 5vw, 48px);
+            font-size: 36px;
             font-weight: 900;
             color: #ffd700;
-            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+            text-shadow: 3px 3px 6px #000;
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 16;
-            text-align: center;
+            pointer-events: none;
             white-space: nowrap;
         }
 
-        /* Instructions screen */
-        .instructions-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            max-width: 500px;
-            margin: 20px;
+        #notification.show {
+            opacity: 1;
         }
 
-        .instruction-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: #fff;
-            font-size: clamp(12px, 2.5vw, 16px);
-        }
-
-        .key-badge {
-            min-width: 50px;
-            padding: 8px 12px;
-            background: #333;
-            border: 2px solid #666;
-            border-radius: 8px;
-            text-align: center;
-            font-family: monospace;
+        .dmg-num {
+            position: absolute;
+            font-size: 24px;
             font-weight: bold;
-            color: #ffd700;
+            color: #ff5252;
+            text-shadow: 2px 2px 4px #000;
+            pointer-events: none;
+            animation: floatUp 0.8s ease-out forwards;
+            z-index: 15;
         }
 
-        #instructionsScreen {
-            overflow-y: auto;
-        }
-
-        #instructionsScreen .screen-content {
-            padding: 40px 20px;
-        }
-
-        .back-btn {
-            margin-top: 20px;
+        @keyframes floatUp {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-50px) scale(1.3); }
         }
     </style>
 </head>
@@ -428,238 +279,190 @@
     <div id="gameContainer">
         <canvas id="gameCanvas"></canvas>
 
-        <!-- UI Overlay -->
-        <div id="uiOverlay">
-            <div id="playerHealthContainer" class="health-bar-container">
-                <div id="playerHealth" class="health-bar"></div>
-            </div>
-            <div id="enemyHealthContainer" class="health-bar-container">
-                <div id="enemyHealth" class="health-bar"></div>
-            </div>
-            <div id="playerName" class="fighter-name">YOU</div>
-            <div id="enemyName" class="fighter-name">CPU</div>
-            <div id="playerStamina" class="stamina-bar">
-                <div id="playerStaminaFill" class="stamina-fill" style="width: 100%"></div>
-            </div>
-            <div id="enemyStamina" class="stamina-bar">
-                <div id="enemyStaminaFill" class="stamina-fill" style="width: 100%"></div>
-            </div>
+        <!-- HUD -->
+        <div id="hud">
+            <div id="pHealthC" class="bar-container"><div id="pHealth" class="bar-fill"></div></div>
+            <div id="eHealthC" class="bar-container"><div id="eHealth" class="bar-fill"></div></div>
+            <div id="pName" class="name">YOU</div>
+            <div id="eName" class="name">CPU</div>
             <div id="timer">02:00</div>
-            <div id="roundDisplay">Round 1</div>
-            <div id="comboDisplay">COMBO x2!</div>
-            <div id="koFlash"></div>
+            <div id="roundText">Round 1</div>
             <div id="notification"></div>
         </div>
 
         <!-- Touch Controls -->
         <div id="touchControls">
-            <div id="btnLeft" class="touch-btn">←</div>
-            <div id="btnRight" class="touch-btn">→</div>
-            <div id="btnBlock" class="touch-btn">🛡️</div>
-            <div id="btnPunch" class="touch-btn">👊</div>
-            <div id="btnDodge" class="touch-btn">💨</div>
+            <div id="tbLeft" class="tbtn">◄</div>
+            <div id="tbRight" class="tbtn">►</div>
+            <div id="tbPunch" class="tbtn">👊</div>
+            <div id="tbBlock" class="tbtn">🛡</div>
+            <div id="tbDodge" class="tbtn">↩</div>
         </div>
 
         <!-- Title Screen -->
         <div id="titleScreen" class="screen">
-            <div class="game-title">🥊 KNOCKOUT 🥊</div>
+            <div class="game-title">🥊 PUNCH OUT 🥊</div>
             <div class="game-subtitle">Arcade Boxing Championship</div>
-            <button class="menu-btn" onclick="startGame()">Fight!</button>
-            <button class="menu-btn" onclick="showInstructions()">How to Play</button>
-            <div class="controls-info">
-                <div class="desktop-only">
-                    <kbd>A</kbd><kbd>D</kbd> or <kbd>←</kbd><kbd>→</kbd> Move &nbsp;|&nbsp;
-                    <kbd>J</kbd> or <kbd>Z</kbd> Punch &nbsp;|&nbsp;
-                    <kbd>K</kbd> or <kbd>X</kbd> Block &nbsp;|&nbsp;
-                    <kbd>L</kbd> or <kbd>C</kbd> Dodge
-                </div>
-                <div>Touch controls available on mobile devices</div>
+            <button class="btn" id="btnStart">FIGHT!</button>
+            <button class="btn" id="btnHelp">How to Play</button>
+            <div class="controls-text">
+                <span class="key">A</span> <span class="key">D</span> Move &nbsp;
+                <span class="key">J</span> Punch &nbsp;
+                <span class="key">K</span> Block &nbsp;
+                <span class="key">L</span> Dodge
             </div>
         </div>
 
-        <!-- Instructions Screen -->
-        <div id="instructionsScreen" class="screen hidden">
-            <div class="screen-content">
-                <div class="game-title" style="font-size: clamp(24px,5vw,40px);">How to Play</div>
-                <div class="instructions-grid">
-                    <div class="instruction-item">
-                        <div class="key-badge">A D</div>
-                        <span>Move Left / Right</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">← →</div>
-                        <span>Move Left / Right</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">J</div>
-                        <span>Jab / Punch</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">Z</div>
-                        <span>Alternate Punch</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">K</div>
-                        <span>Block / Guard</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">X</div>
-                        <span>Alternate Block</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">L</div>
-                        <span>Dodge / Weave</span>
-                    </div>
-                    <div class="instruction-item">
-                        <div class="key-badge">C</div>
-                        <span>Alternate Dodge</span>
-                    </div>
-                </div>
-                <div style="color: #aaa; margin-top: 20px; text-align: center; max-width: 400px; line-height: 1.6;">
-                    Land punches to deal damage. Block to reduce incoming damage. Dodge to avoid punches completely. Watch your stamina - punching and dodging drain it!
-                </div>
-                <button class="menu-btn back-btn" onclick="showTitle()">Back</button>
+        <!-- Help Screen -->
+        <div id="helpScreen" class="screen hidden">
+            <div class="game-title" style="font-size: 32px;">How to Play</div>
+            <div style="color: #ccc; margin: 20px; text-align: center; line-height: 2; font-size: 14px;">
+                <b>Move:</b> A / D or Arrow Keys<br>
+                <b>Punch:</b> J or Z<br>
+                <b>Block:</b> K or X (reduces damage)<br>
+                <b>Dodge:</b> L or C (avoids damage)<br><br>
+                Land punches to deal damage.<br>
+                Block to reduce incoming hits.<br>
+                Dodge to avoid punches completely.<br>
+                Watch your stamina!
             </div>
+            <button class="btn" id="btnBack">Back</button>
         </div>
 
         <!-- Game Over Screen -->
         <div id="gameOverScreen" class="screen hidden">
-            <div id="resultTitle" class="result-title">VICTORY!</div>
-            <div id="finalScore">Score: 0</div>
-            <button class="menu-btn" onclick="startGame()">Rematch</button>
-            <button class="menu-btn" onclick="showTitle()">Main Menu</button>
+            <div id="resultTitle" style="font-size: 48px; font-weight: 900; margin-bottom: 10px;">VICTORY!</div>
+            <div id="scoreText" style="color: #fff; font-size: 20px; margin-bottom: 20px;">Score: 0</div>
+            <button class="btn" id="btnRematch">Rematch</button>
+            <button class="btn" id="btnMenu">Main Menu</button>
         </div>
 
         <!-- Pause Screen -->
         <div id="pauseScreen" class="screen hidden">
-            <div class="game-title" style="font-size: clamp(28px,6vw,48px);">PAUSED</div>
-            <button class="menu-btn" onclick="resumeGame()">Resume</button>
-            <button class="menu-btn" onclick="showTitle()">Quit</button>
+            <div style="font-size: 40px; font-weight: 900; color: #ffd700; margin-bottom: 20px;">PAUSED</div>
+            <button class="btn" id="btnResume">Resume</button>
+            <button class="btn" id="btnQuit">Quit</button>
         </div>
     </div>
 
     <script>
-        // ==================== GAME ENGINE ====================
-
+        // ==================== SETUP ====================
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
+        const container = document.getElementById('gameContainer');
 
-        // Game images
-        const ringImg = new Image();
-        ringImg.src = 'https://mcp-tools-z-image-turbo.hf.space/--replicas/hjjmt/gradio_api/file=/tmp/gradio/cde145ed42c44fe1586d89eba293c683b3eec3d09c490c758719c2a62ad419d2/image.webp';
-        const boxerImg = new Image();
-        boxerImg.src = 'https://mcp-tools-z-image-turbo.hf.space/--replicas/hjjmt/gradio_api/file=/tmp/gradio/cdd5e94ac72c6fe87c0a8a9ec5b8622b20f7ab1e024b303178ee003af04b21ab/image.webp';
+        // Screen elements
+        const screens = {
+            title: document.getElementById('titleScreen'),
+            help: document.getElementById('helpScreen'),
+            gameover: document.getElementById('gameOverScreen'),
+            pause: document.getElementById('pauseScreen')
+        };
+        const hud = document.getElementById('hud');
+
+        // UI elements
+        const elTimer = document.getElementById('timer');
+        const elRound = document.getElementById('roundText');
+        const elNotification = document.getElementById('notification');
+        const elPHealth = document.getElementById('pHealth');
+        const elEHealth = document.getElementById('eHealth');
+        const elResult = document.getElementById('resultTitle');
+        const elScore = document.getElementById('scoreText');
+
+        // Buttons
+        const buttons = {
+            start: document.getElementById('btnStart'),
+            help: document.getElementById('btnHelp'),
+            back: document.getElementById('btnBack'),
+            rematch: document.getElementById('btnRematch'),
+            menu: document.getElementById('btnMenu'),
+            resume: document.getElementById('btnResume'),
+            quit: document.getElementById('btnQuit')
+        };
 
         // Game state
         let gameState = 'menu'; // menu, playing, paused, gameover
-        let round = 1;
-        let maxRounds = 3;
-        let roundTime = 120; // seconds
-        let timeRemaining = roundTime;
+        let round = 1, maxRounds = 3;
+        let timeLeft = 120;
+        let score = 0, combo = 0, maxCombo = 0;
+        let roundActive = false;
+        let timerInterval = null;
         let lastTime = 0;
-        let score = 0;
-        let combo = 0;
-        let maxCombo = 0;
 
-        // Canvas sizing
-        function resizeCanvas() {
-            const container = document.getElementById('gameContainer');
-            canvas.width = container.clientWidth;
-            canvas.height = container.clientHeight;
+        // Input
+        const keys = {};
+
+        // Resize canvas
+        function resize() {
+            const r = container.getBoundingClientRect();
+            canvas.width = r.width;
+            canvas.height = r.height;
         }
-        window.addEventListener('resize', resizeCanvas);
-        resizeCanvas();
+        window.addEventListener('resize', resize);
+        resize();
 
-        // ==================== FIGHTER CLASS ====================
-
+        // ==================== FIGHTER ====================
         class Fighter {
-            constructor(x, isPlayer, color) {
+            constructor(x, isPlayer) {
                 this.x = x;
-                this.y = canvas.height * 0.65;
-                this.baseY = this.y;
-                this.width = 80;
-                this.height = 160;
                 this.isPlayer = isPlayer;
-                this.color = color;
-                
-                this.maxHealth = 100;
-                this.health = this.maxHealth;
-                this.maxStamina = 100;
-                this.stamina = this.maxStamina;
-                
-                this.state = 'idle'; // idle, punch, block, dodge, hit, ko
-                this.stateTimer = 0;
-                this.punchArm = 0; // 0 to 1 animation
-                this.dodgeOffset = 0;
-                
-                this.moveSpeed = 300;
-                this.facing = isPlayer ? 1 : -1;
-                
-                this.hitFlash = 0;
-                this.particles = [];
-                
-                // Animation
-                this.bobTimer = 0;
-                this.breathTimer = 0;
+                this.reset();
             }
 
-            update(dt, opponent) {
-                this.stateTimer -= dt;
-                this.hitFlash = Math.max(0, this.hitFlash - dt * 5);
-                this.bobTimer += dt * 3;
-                this.breathTimer += dt * 2;
-                
-                // Stamina regen
+            reset() {
+                this.y = canvas.height * 0.62;
+                this.w = 70;
+                this.h = 140;
+                this.hp = 100;
+                this.maxHp = 100;
+                this.stamina = 100;
+                this.state = 'idle'; // idle, punch, block, dodge, hit, ko
+                this.timer = 0;
+                this.punchAnim = 0;
+                this.dodgeX = 0;
+                this.flash = 0;
+                this.facing = this.isPlayer ? 1 : -1;
+                this.bob = 0;
+            }
+
+            update(dt) {
+                this.bob += dt * 4;
+                this.y = canvas.height * 0.62 + Math.sin(this.bob) * 4;
+                this.flash = Math.max(0, this.flash - dt * 6);
+
                 if (this.state === 'idle' || this.state === 'block') {
-                    this.stamina = Math.min(this.maxStamina, this.stamina + dt * 15);
+                    this.stamina = Math.min(100, this.stamina + dt * 12);
                 }
-                
-                // State machine
-                if (this.stateTimer <= 0 && this.state !== 'ko') {
-                    this.state = 'idle';
-                    this.punchArm = 0;
-                    this.dodgeOffset = 0;
-                }
-                
-                // Dodge recovery
-                if (this.state === 'dodge') {
-                    this.dodgeOffset = Math.sin(this.stateTimer * 10) * 30 * this.facing;
-                }
-                
-                // Punch animation
-                if (this.state === 'punch') {
-                    const progress = 1 - (this.stateTimer / 0.3);
-                    if (progress < 0.5) {
-                        this.punchArm = progress * 2;
-                    } else {
-                        this.punchArm = (1 - progress) * 2;
+
+                if (this.timer > 0) {
+                    this.timer -= dt;
+                    if (this.timer <= 0) {
+                        this.state = 'idle';
+                        this.punchAnim = 0;
+                        this.dodgeX = 0;
                     }
                 }
-                
-                // Update particles
-                this.particles = this.particles.filter(p => {
-                    p.x += p.vx * dt;
-                    p.y += p.vy * dt;
-                    p.vy += 200 * dt;
-                    p.life -= dt;
-                    return p.life > 0;
-                });
-                
-                // Bobbing
-                this.y = this.baseY + Math.sin(this.bobTimer) * 5;
+
+                if (this.state === 'punch') {
+                    const t = 1 - this.timer / 0.35;
+                    this.punchAnim = t < 0.5 ? t * 2 : (1 - t) * 2;
+                }
+                if (this.state === 'dodge') {
+                    this.dodgeX = Math.sin(this.timer * 15) * 35 * this.facing;
+                }
             }
 
             move(dir, dt) {
                 if (this.state === 'ko') return;
-                const speed = this.moveSpeed * (this.stamina / 100) * 0.5 + this.moveSpeed * 0.5;
-                this.x += dir * speed * dt;
-                this.x = Math.max(100, Math.min(canvas.width - 100, this.x));
+                const spd = 280 * dt;
+                this.x += dir * spd;
+                this.x = Math.max(80, Math.min(canvas.width - 80, this.x));
             }
 
             punch() {
-                if (this.state !== 'idle' || this.stamina < 10) return false;
+                if (this.state !== 'idle' || this.stamina < 12) return false;
                 this.state = 'punch';
-                this.stateTimer = 0.3;
+                this.timer = 0.35;
                 this.stamina -= 15;
                 return true;
             }
@@ -667,616 +470,600 @@
             block() {
                 if (this.state !== 'idle') return false;
                 this.state = 'block';
-                this.stateTimer = 0.5;
+                this.timer = 0.4;
                 return true;
             }
 
             dodge() {
                 if (this.state !== 'idle' || this.stamina < 20) return false;
                 this.state = 'dodge';
-                this.stateTimer = 0.4;
+                this.timer = 0.45;
                 this.stamina -= 25;
                 return true;
             }
 
-            takeDamage(amount, isBlocked) {
+            hit(dmg) {
                 if (this.state === 'ko') return 0;
-                
-                let actualDamage = amount;
-                if (isBlocked) {
-                    actualDamage *= 0.3;
+                let actual = dmg;
+                const blocked = this.state === 'block';
+                const dodged = this.state === 'dodge';
+
+                if (blocked) actual *= 0.25;
+                else if (dodged) actual = 0;
+
+                actual = Math.floor(actual);
+                this.hp -= actual;
+                this.flash = 1;
+                if (blocked) {
                     this.state = 'block';
-                    this.stateTimer = 0.3;
-                } else if (this.state === 'dodge') {
-                    actualDamage = 0;
+                    this.timer = 0.3;
                 }
-                
-                actualDamage = Math.floor(actualDamage);
-                this.health -= actualDamage;
-                this.hitFlash = 1;
-                
-                // Spawn particles
-                for (let i = 0; i < 8; i++) {
-                    this.particles.push({
-                        x: this.x + (Math.random() - 0.5) * 40,
-                        y: this.y - 60 + (Math.random() - 0.5) * 40,
-                        vx: (Math.random() - 0.5) * 200,
-                        vy: (Math.random() - 1) * 200,
-                        life: 0.5 + Math.random() * 0.3,
-                        size: 3 + Math.random() * 5,
-                        color: `hsl(${10 + Math.random() * 30}, 100%, ${50 + Math.random() * 30}%)`
-                    });
-                }
-                
-                if (this.health <= 0) {
-                    this.health = 0;
+
+                if (this.hp <= 0) {
+                    this.hp = 0;
                     this.state = 'ko';
-                    this.stateTimer = 999;
+                    this.timer = 999;
                 }
-                
-                return actualDamage;
+                return actual;
             }
 
-            getPunchHitbox() {
-                const reach = 90;
-                return {
-                    x: this.x + this.facing * reach,
-                    y: this.y - 80,
-                    radius: 40
-                };
+            punchBox() {
+                return { x: this.x + this.facing * 75, y: this.y - 70, r: 35 };
             }
 
-            getHitbox() {
-                return {
-                    x: this.x,
-                    y: this.y - 60,
-                    radius: 35
-                };
+            bodyBox() {
+                return { x: this.x + this.dodgeX, y: this.y - 60, r: 30 };
             }
 
             draw(ctx) {
+                const sx = this.isPlayer ? -1 : 1;
                 ctx.save();
-                
-                // Hit flash
-                if (this.hitFlash > 0) {
-                    ctx.globalAlpha = 0.7 + Math.sin(this.hitFlash * 20) * 0.3;
-                }
-                
-                const scaleX = this.isPlayer ? -1 : 1;
-                ctx.translate(this.x + this.dodgeOffset, this.y);
-                ctx.scale(scaleX, 1);
-                
-                // Draw fighter body (procedural)
-                this.drawBody(ctx);
-                
-                // Draw particles
-                ctx.restore();
-                this.particles.forEach(p => {
-                    ctx.globalAlpha = p.life / 0.8;
-                    ctx.fillStyle = p.color;
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.size * (p.life / 0.8), 0, Math.PI * 2);
-                    ctx.fill();
-                });
-                ctx.globalAlpha = 1;
-                
-                // Shadow
-                ctx.fillStyle = 'rgba(0,0,0,0.3)';
-                ctx.beginPath();
-                ctx.ellipse(this.x + this.dodgeOffset, this.y + 5, 40, 10, 0, 0, Math.PI * 2);
-                ctx.fill();
-            }
+                ctx.translate(this.x + this.dodgeX, this.y);
+                ctx.scale(sx, 1);
 
-            drawBody(ctx) {
-                const breath = Math.sin(this.breathTimer) * 0.05 + 1;
-                
+                // Shadow
+                ctx.fillStyle = 'rgba(0,0,0,0.25)';
+                ctx.beginPath();
+                ctx.ellipse(0, 8, 35, 8, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Flash
+                if (this.flash > 0) {
+                    ctx.globalAlpha = 0.6 + Math.sin(this.flash * 15) * 0.4;
+                }
+
+                const c = this.isPlayer;
+                const breath = Math.sin(this.bob * 0.7) * 0.03 + 1;
+
                 // Legs
-                ctx.fillStyle = this.isPlayer ? '#1565c0' : '#c62828';
-                ctx.fillRect(-20, -60, 15, 60);
-                ctx.fillRect(5, -60, 15, 60);
-                
+                ctx.fillStyle = c ? '#1565c0' : '#b71c1c';
+                ctx.fillRect(-18, -55, 13, 55);
+                ctx.fillRect(5, -55, 13, 55);
+
                 // Shorts
-                ctx.fillStyle = this.isPlayer ? '#1976d2' : '#d32f2f';
-                ctx.fillRect(-28, -90, 56, 35);
-                
+                ctx.fillStyle = c ? '#1976d2' : '#d32f2f';
+                ctx.fillRect(-25, -85, 50, 35);
+
                 // Torso
-                ctx.fillStyle = this.isPlayer ? '#4fc3f7' : '#ff5252';
+                ctx.fillStyle = c ? '#4fc3f7' : '#ff5252';
                 ctx.save();
-                ctx.scale(breath, 1/breath);
-                ctx.fillRect(-25, -140, 50, 55);
+                ctx.scale(breath, 1 / breath);
+                ctx.fillRect(-22, -130, 44, 50);
                 ctx.restore();
-                
+
                 // Head
                 ctx.fillStyle = '#ffcc80';
                 ctx.beginPath();
-                ctx.arc(0, -155, 22, 0, Math.PI * 2);
+                ctx.arc(0, -145, 20, 0, Math.PI * 2);
                 ctx.fill();
-                
+
                 // Hair
                 ctx.fillStyle = '#3e2723';
                 ctx.beginPath();
-                ctx.arc(0, -162, 22, Math.PI, 0);
+                ctx.arc(0, -152, 20, Math.PI, 0);
                 ctx.fill();
-                
+
                 // Eyes
                 ctx.fillStyle = '#fff';
                 ctx.beginPath();
-                ctx.arc(-8, -158, 6, 0, Math.PI * 2);
-                ctx.arc(8, -158, 6, 0, Math.PI * 2);
+                ctx.arc(-7, -148, 5, 0, Math.PI * 2);
+                ctx.arc(7, -148, 5, 0, Math.PI * 2);
                 ctx.fill();
-                ctx.fillStyle = '#333';
+                ctx.fillStyle = '#222';
                 ctx.beginPath();
-                ctx.arc(-8 + this.facing * 2, -158, 3, 0, Math.PI * 2);
-                ctx.arc(8 + this.facing * 2, -158, 3, 0, Math.PI * 2);
+                ctx.arc(-7 + this.facing * 1.5, -148, 2.5, 0, Math.PI * 2);
+                ctx.arc(7 + this.facing * 1.5, -148, 2.5, 0, Math.PI * 2);
                 ctx.fill();
-                
+
                 // Gloves
-                const gloveY = -110 + Math.sin(this.bobTimer * 2) * 5;
-                const leftGloveX = -35;
-                let rightGloveX = 35;
-                
-                if (this.state === 'punch') {
-                    rightGloveX = 35 + this.punchArm * 70;
-                }
-                
+                const gy = -100 + Math.sin(this.bob * 2) * 4;
+                const px = this.state === 'punch' ? 35 + this.punchAnim * 60 : 30;
+
                 // Left glove (guard)
-                ctx.fillStyle = this.isPlayer ? '#e53935' : '#1565c0';
+                ctx.fillStyle = c ? '#e53935' : '#1565c0';
                 ctx.beginPath();
-                ctx.arc(leftGloveX, gloveY, 18, 0, Math.PI * 2);
+                ctx.arc(-28, gy, 16, 0, Math.PI * 2);
                 ctx.fill();
-                
+
                 // Right glove
-                ctx.fillStyle = this.isPlayer ? '#e53935' : '#1565c0';
+                ctx.fillStyle = c ? '#e53935' : '#1565c0';
                 ctx.beginPath();
-                ctx.arc(rightGloveX, gloveY - this.punchArm * 10, 18, 0, Math.PI * 2);
+                ctx.arc(px, gy - this.punchAnim * 8, 16, 0, Math.PI * 2);
                 ctx.fill();
-                
+
                 // Block pose
                 if (this.state === 'block') {
-                    ctx.fillStyle = this.isPlayer ? '#e53935' : '#1565c0';
+                    ctx.fillStyle = c ? '#e53935' : '#1565c0';
                     ctx.beginPath();
-                    ctx.arc(-20, -130, 18, 0, Math.PI * 2);
-                    ctx.arc(20, -130, 18, 0, Math.PI * 2);
+                    ctx.arc(-18, -125, 16, 0, Math.PI * 2);
+                    ctx.arc(18, -125, 16, 0, Math.PI * 2);
                     ctx.fill();
                 }
-                
-                // KO pose
+
+                // KO rotation
                 if (this.state === 'ko') {
-                    ctx.rotate(Math.PI / 2 * (this.isPlayer ? -1 : 1));
+                    ctx.rotate(Math.PI / 2.5 * (this.isPlayer ? -1 : 1));
                 }
+
+                ctx.restore();
             }
         }
 
-        // ==================== GAME LOGIC ====================
-
+        // ==================== GAME OBJECTS ====================
         let player, enemy;
-        let keys = {};
-        let roundActive = false;
-        let roundTimerInterval;
-        let shakeIntensity = 0;
+        let particles = [];
+        let shake = 0;
 
+        function spawnParticles(x, y, color) {
+            for (let i = 0; i < 6; i++) {
+                particles.push({
+                    x, y,
+                    vx: (Math.random() - 0.5) * 250,
+                    vy: (Math.random() - 1) * 250,
+                    life: 0.4 + Math.random() * 0.3,
+                    size: 3 + Math.random() * 5,
+                    color
+                });
+            }
+        }
+
+        function showDmg(x, y, dmg, crit) {
+            const el = document.createElement('div');
+            el.className = 'dmg-num';
+            el.textContent = dmg;
+            el.style.left = ((x / canvas.width) * 100) + '%';
+            el.style.top = ((y / canvas.height) * 100) + '%';
+            if (crit) {
+                el.style.color = '#ffd700';
+                el.style.fontSize = '32px';
+            }
+            container.appendChild(el);
+            setTimeout(() => el.remove(), 800);
+        }
+
+        function notify(text) {
+            elNotification.textContent = text;
+            elNotification.classList.add('show');
+            setTimeout(() => elNotification.classList.remove('show'), 1200);
+        }
+
+        // ==================== GAME LOGIC ====================
         function initGame() {
-            const startX = canvas.width * 0.3;
-            const enemyX = canvas.width * 0.7;
-            
-            player = new Fighter(startX, true, '#4fc3f7');
-            enemy = new Fighter(enemyX, false, '#ff5252');
-            player.facing = 1;
-            enemy.facing = -1;
-            
+            resize();
+            const px = canvas.width * 0.25;
+            const ex = canvas.width * 0.75;
+            player = new Fighter(px, true);
+            enemy = new Fighter(ex, false);
+            particles = [];
             round = 1;
             score = 0;
             combo = 0;
             maxCombo = 0;
-            timeRemaining = roundTime;
+            timeLeft = 120;
             roundActive = true;
-            
-            updateUI();
-            startRoundTimer();
+            shake = 0;
+
+            updateHUD();
+            startTimer();
         }
 
-        function startRoundTimer() {
-            clearInterval(roundTimerInterval);
-            roundTimerInterval = setInterval(() => {
+        function startTimer() {
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
                 if (gameState !== 'playing' || !roundActive) return;
-                timeRemaining--;
-                if (timeRemaining <= 0) {
-                    endRound();
-                }
+                timeLeft--;
+                if (timeLeft <= 0) endRound();
                 updateTimer();
             }, 1000);
         }
 
         function updateTimer() {
-            const mins = Math.floor(timeRemaining / 60);
-            const secs = timeRemaining % 60;
-            document.getElementById('timer').textContent = 
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+            const m = Math.floor(timeLeft / 60);
+            const s = timeLeft % 60;
+            elTimer.textContent = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
         }
 
-        function updateUI() {
-            document.getElementById('playerHealth').style.width = `${(player.health / player.maxHealth) * 100}%`;
-            document.getElementById('enemyHealth').style.width = `${(enemy.health / enemy.maxHealth) * 100}%`;
-            document.getElementById('playerStaminaFill').style.width = `${(player.stamina / player.maxStamina) * 100}%`;
-            document.getElementById('enemyStaminaFill').style.width = `${(enemy.stamina / enemy.maxStamina) * 100}%`;
-            document.getElementById('roundDisplay').textContent = `Round ${round}/${maxRounds}`;
+        function updateHUD() {
+            elPHealth.style.width = (player.hp / player.maxHp * 100) + '%';
+            elEHealth.style.width = (enemy.hp / enemy.maxHp * 100) + '%';
+            elRound.textContent = `Round ${round}/${maxRounds}`;
         }
 
-        function showDamageNumber(x, y, damage, isCrit) {
-            const el = document.createElement('div');
-            el.className = 'damage-number';
-            el.textContent = damage;
-            el.style.left = `${(x / canvas.width) * 100}%`;
-            el.style.top = `${(y / canvas.height) * 100}%`;
-            if (isCrit) {
-                el.style.color = '#ffd700';
-                el.style.fontSize = '36px';
-            }
-            document.getElementById('uiOverlay').appendChild(el);
-            setTimeout(() => el.remove(), 1000);
-        }
+        function checkPunch(attacker, defender) {
+            if (!attacker || !defender || defender.state === 'ko') return;
 
-        function showNotification(text) {
-            const el = document.getElementById('notification');
-            el.textContent = text;
-            el.style.opacity = '1';
-            setTimeout(() => {
-                el.style.opacity = '0';
-            }, 1500);
-        }
+            const pb = attacker.punchBox();
+            const bb = defender.bodyBox();
+            const d = Math.hypot(pb.x - bb.x, pb.y - bb.y);
 
-        function showCombo() {
-            const el = document.getElementById('comboDisplay');
-            if (combo >= 2) {
-                el.textContent = `COMBO x${combo}!`;
-                el.style.opacity = '1';
-                setTimeout(() => {
-                    el.style.opacity = '0';
-                }, 1000);
-            }
-        }
+            if (d < pb.r + bb.r + 15) {
+                const blocked = defender.state === 'block';
+                const dodged = defender.state === 'dodge';
 
-        function flashKO() {
-            const flash = document.getElementById('koFlash');
-            flash.style.opacity = '0.8';
-            setTimeout(() => flash.style.opacity = '0', 150);
-            setTimeout(() => flash.style.opacity = '0.6', 300);
-            setTimeout(() => flash.style.opacity = '0', 450);
-        }
+                let dmg = 5 + Math.random() * 7;
+                let crit = false;
 
-        // ==================== INPUT HANDLING ====================
-
-        document.addEventListener('keydown', (e) => {
-            keys[e.key.toLowerCase()] = true;
-            
-            if (gameState === 'playing') {
-                if (e.key === 'j' || e.key === 'z') playerPunch();
-                if (e.key === 'k' || e.key === 'x') playerBlock();
-                if (e.key === 'l' || e.key === 'c') playerDodge();
-                if (e.key === 'Escape') pauseGame();
-            }
-        });
-
-        document.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
-
-        // Touch controls
-        function setupTouchBtn(id, action) {
-            const btn = document.getElementById(id);
-            let interval;
-            
-            const start = (e) => {
-                e.preventDefault();
-                action();
-                interval = setInterval(action, 200);
-            };
-            const end = (e) => {
-                e.preventDefault();
-                clearInterval(interval);
-            };
-            
-            btn.addEventListener('touchstart', start);
-            btn.addEventListener('touchend', end);
-            btn.addEventListener('touchcancel', end);
-            btn.addEventListener('mousedown', start);
-            btn.addEventListener('mouseup', end);
-            btn.addEventListener('mouseleave', end);
-        }
-
-        setupTouchBtn('btnLeft', () => { if(gameState==='playing') player.move(-1, 0.016); });
-        setupTouchBtn('btnRight', () => { if(gameState==='playing') player.move(1, 0.016); });
-        
-        document.getElementById('btnPunch').addEventListener('touchstart', (e) => { e.preventDefault(); playerPunch(); });
-        document.getElementById('btnPunch').addEventListener('mousedown', (e) => { e.preventDefault(); playerPunch(); });
-        
-        document.getElementById('btnBlock').addEventListener('touchstart', (e) => { e.preventDefault(); playerBlock(); });
-        document.getElementById('btnBlock').addEventListener('mousedown', (e) => { e.preventDefault(); playerBlock(); });
-        
-        document.getElementById('btnDodge').addEventListener('touchstart', (e) => { e.preventDefault(); playerDodge(); });
-        document.getElementById('btnDodge').addEventListener('mousedown', (e) => { e.preventDefault(); playerDodge(); });
-
-        function playerPunch() {
-            if (player.punch()) {
-                checkHit(player, enemy);
-            }
-        }
-
-        function playerBlock() {
-            player.block();
-        }
-
-        function playerDodge() {
-            player.dodge();
-        }
-
-        function checkHit(attacker, defender) {
-            const hitbox = attacker.getPunchHitbox();
-            const target = defender.getHitbox();
-            const dist = Math.hypot(hitbox.x - target.x, hitbox.y - target.y);
-            
-            if (dist < hitbox.radius + target.radius) {
-                const isBlocked = defender.state === 'block';
-                const isDodged = defender.state === 'dodge';
-                
-                let baseDamage = 8 + Math.random() * 7;
-                let isCrit = false;
-                
-                // Combo bonus
-                if (attacker === player && !isBlocked && !isDodged) {
+                if (attacker === player && !blocked && !dodged) {
                     combo++;
                     if (combo > maxCombo) maxCombo = combo;
                     if (combo >= 3) {
-                        baseDamage *= 1.5;
-                        isCrit = true;
+                        dmg *= 1.5;
+                        crit = true;
                     }
-                    showCombo();
                 }
-                
-                const damage = defender.takeDamage(baseDamage, isBlocked);
-                
-                if (damage > 0) {
-                    showDamageNumber(defender.x, defender.y - 100, damage, isCrit);
-                    shakeIntensity = isCrit ? 15 : 8;
-                    
-                    if (attacker === player) {
-                        score += damage * (combo > 2 ? 2 : 1);
-                    }
-                    
-                    if (defender.state === 'ko') {
-                        flashKO();
-                        setTimeout(() => endFight(attacker === player), 1000);
-                    }
-                } else if (isDodged) {
-                    showNotification('DODGED!');
-                    combo = 0;
+
+                const actual = defender.hit(dmg);
+                if (actual > 0) {
+                    showDmg(defender.x, defender.y - 90, actual, crit);
+                    spawnParticles(defender.x, defender.y - 70, crit ? '#ffd700' : '#ff5252');
+                    shake = crit ? 12 : 6;
+                    if (attacker === player) score += actual * (combo > 2 ? 2 : 1);
+                    if (combo >= 2 && attacker === player) notify(`COMBO x${combo}!`);
                 }
-                
-                updateUI();
+
+                if (defender.state === 'ko') {
+                    setTimeout(() => finishGame(attacker === player), 1200);
+                }
+                updateHUD();
+            } else if (attacker === player) {
+                combo = 0;
             }
+        }
+
+        function endRound() {
+            roundActive = false;
+            clearInterval(timerInterval);
+
+            if (round >= maxRounds) {
+                finishGame(player.hp > enemy.hp);
+            } else {
+                round++;
+                timeLeft = 120;
+                player.hp = Math.min(100, player.hp + 25);
+                enemy.hp = Math.min(100, enemy.hp + 25);
+                player.stamina = 100;
+                enemy.stamina = 100;
+                player.state = 'idle';
+                enemy.state = 'idle';
+                notify(`ROUND ${round}`);
+                setTimeout(() => {
+                    if (gameState === 'playing') {
+                        roundActive = true;
+                        startTimer();
+                    }
+                }, 2000);
+            }
+        }
+
+        function finishGame(playerWon) {
+            if (gameState === 'gameover') return;
+            gameState = 'gameover';
+            roundActive = false;
+            clearInterval(timerInterval);
+
+            if (playerWon) {
+                elResult.textContent = 'VICTORY!';
+                elResult.style.color = '#ffd700';
+                score += 500 + maxCombo * 100;
+            } else {
+                elResult.textContent = 'DEFEAT...';
+                elResult.style.color = '#ff5252';
+            }
+            elScore.textContent = `Score: ${score} | Max Combo: ${maxCombo}`;
+            showScreen('gameover');
+            hud.classList.remove('active');
         }
 
         // ==================== AI ====================
-
-        let aiTimer = 0;
-        let aiDecision = 0;
+        let aiThink = 0;
 
         function updateAI(dt) {
-            aiTimer -= dt;
-            if (aiTimer <= 0) {
-                aiTimer = 0.3 + Math.random() * 0.5;
-                
-                const dist = Math.abs(player.x - enemy.x);
-                const distToPlayer = player.x - enemy.x;
-                
-                // AI decisions
-                if (enemy.state === 'idle') {
-                    if (dist < 150) {
-                        // Close range - attack or defend
-                        const roll = Math.random();
-                        if (roll < 0.4 && enemy.stamina > 15) {
-                            if (enemy.punch()) checkHit(enemy, player);
-                        } else if (roll < 0.7) {
-                            enemy.block();
-                        } else if (enemy.stamina > 25) {
-                            enemy.dodge();
+            aiThink -= dt;
+            const dist = Math.abs(player.x - enemy.x);
+
+            // Always move toward player when idle and far
+            if (enemy.state === 'idle' && dist > 140) {
+                const dir = player.x > enemy.x ? 1 : -1;
+                enemy.move(dir, dt);
+            }
+
+            if (aiThink <= 0 && enemy.state === 'idle') {
+                aiThink = 0.35 + Math.random() * 0.5;
+
+                if (dist < 150) {
+                    const r = Math.random();
+                    if (r < 0.4 && enemy.stamina > 15) {
+                        if (enemy.punch()) {
+                            setTimeout(() => checkPunch(enemy, player), 120);
                         }
-                    } else if (dist < 300) {
-                        // Medium range - approach or attack
-                        const roll = Math.random();
-                        if (roll < 0.5) {
-                            enemy.move(distToPlayer > 0 ? 1 : -1, dt * 2);
-                        } else if (roll < 0.8 && enemy.stamina > 15) {
-                            if (enemy.punch()) checkHit(enemy, player);
-                        }
-                    } else {
-                        // Far - approach
-                        enemy.move(distToPlayer > 0 ? 1 : -1, dt * 2);
+                    } else if (r < 0.7) {
+                        enemy.block();
+                    } else if (enemy.stamina > 20) {
+                        enemy.dodge();
+                    }
+                } else if (dist < 300 && Math.random() < 0.3 && enemy.stamina > 15) {
+                    enemy.move(player.x > enemy.x ? 1 : -1, dt * 3);
+                    if (enemy.punch()) {
+                        setTimeout(() => checkPunch(enemy, player), 120);
                     }
                 }
-                
-                // Keep in bounds
-                if (enemy.x < 120) enemy.x = 120;
-                if (enemy.x > canvas.width - 120) enemy.x = canvas.width - 120;
+            }
+
+            if (enemy.x < 80) enemy.x = 80;
+            if (enemy.x > canvas.width - 80) enemy.x = canvas.width - 80;
+        }
+
+        // ==================== INPUT ====================
+        document.addEventListener('keydown', e => {
+            keys[e.key.toLowerCase()] = true;
+            if (gameState !== 'playing') return;
+
+            if (e.key === 'j' || e.key === 'z') doPunch();
+            if (e.key === 'k' || e.key === 'x') doBlock();
+            if (e.key === 'l' || e.key === 'c') doDodge();
+            if (e.key === 'Escape') doPause();
+        });
+
+        document.addEventListener('keyup', e => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        function doPunch() {
+            if (!player || gameState !== 'playing') return;
+            if (player.punch()) {
+                setTimeout(() => checkPunch(player, enemy), 100);
             }
         }
 
-        // ==================== GAME LOOP ====================
+        function doBlock() {
+            if (!player || gameState !== 'playing') return;
+            player.block();
+        }
 
-        function gameLoop(timestamp) {
-            const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
-            lastTime = timestamp;
-            
+        function doDodge() {
+            if (!player || gameState !== 'playing') return;
+            player.dodge();
+        }
+
+        function doPause() {
+            if (gameState === 'playing') {
+                gameState = 'paused';
+                roundActive = false;
+                clearInterval(timerInterval);
+                showScreen('pause');
+            }
+        }
+
+        // Touch buttons
+        function setupTouch(id, action) {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+            let iv;
+            const down = e => {
+                e.preventDefault();
+                action();
+                iv = setInterval(action, 150);
+            };
+            const up = e => {
+                e.preventDefault();
+                clearInterval(iv);
+            };
+            btn.addEventListener('touchstart', down, { passive: false });
+            btn.addEventListener('touchend', up, { passive: false });
+            btn.addEventListener('touchcancel', up, { passive: false });
+        }
+
+        setupTouch('tbLeft', () => { if (gameState === 'playing' && player) player.move(-1, 0.05); });
+        setupTouch('tbRight', () => { if (gameState === 'playing' && player) player.move(1, 0.05); });
+
+        const tbPunch = document.getElementById('tbPunch');
+        if (tbPunch) {
+            tbPunch.addEventListener('touchstart', e => { e.preventDefault(); doPunch(); }, { passive: false });
+            tbPunch.addEventListener('mousedown', e => { e.preventDefault(); doPunch(); });
+        }
+        const tbBlock = document.getElementById('tbBlock');
+        if (tbBlock) {
+            tbBlock.addEventListener('touchstart', e => { e.preventDefault(); doBlock(); }, { passive: false });
+            tbBlock.addEventListener('mousedown', e => { e.preventDefault(); doBlock(); });
+        }
+        const tbDodge = document.getElementById('tbDodge');
+        if (tbDodge) {
+            tbDodge.addEventListener('touchstart', e => { e.preventDefault(); doDodge(); }, { passive: false });
+            tbDodge.addEventListener('mousedown', e => { e.preventDefault(); doDodge(); });
+        }
+
+        // ==================== SCREEN MANAGEMENT ====================
+        function showScreen(name) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            if (screens[name]) screens[name].classList.remove('hidden');
+        }
+
+        function hideAllScreens() {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+        }
+
+        // Button handlers
+        buttons.start.addEventListener('click', () => {
+            hideAllScreens();
+            hud.classList.add('active');
+            gameState = 'playing';
+            initGame();
+            lastTime = performance.now();
+        });
+
+        buttons.help.addEventListener('click', () => showScreen('help'));
+        buttons.back.addEventListener('click', () => showScreen('title'));
+        buttons.rematch.addEventListener('click', () => {
+            hideAllScreens();
+            hud.classList.add('active');
+            gameState = 'playing';
+            initGame();
+            lastTime = performance.now();
+        });
+        buttons.menu.addEventListener('click', () => {
+            hideAllScreens();
+            hud.classList.remove('active');
+            showScreen('title');
+            gameState = 'menu';
+            player = null;
+            enemy = null;
+        });
+        buttons.resume.addEventListener('click', () => {
+            hideAllScreens();
+            hud.classList.add('active');
+            gameState = 'playing';
+            roundActive = true;
+            lastTime = performance.now();
+            startTimer();
+        });
+        buttons.quit.addEventListener('click', () => {
+            hideAllScreens();
+            hud.classList.remove('active');
+            showScreen('title');
+            gameState = 'menu';
+            player = null;
+            enemy = null;
+        });
+
+        // ==================== RENDER ====================
+        function drawRing() {
+            // Background
+            const g = ctx.createRadialGradient(canvas.width / 2, canvas.height / 2, 50, canvas.width / 2, canvas.height / 2, canvas.width);
+            g.addColorStop(0, '#1a1a3e');
+            g.addColorStop(1, '#0a0a1a');
+            ctx.fillStyle = g;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Crowd
+            ctx.fillStyle = '#0d0d1a';
+            for (let i = 0; i < canvas.width; i += 12) {
+                const h = 15 + Math.sin(i * 0.08) * 12;
+                ctx.fillRect(i, canvas.height * 0.38 - h, 10, h);
+            }
+
+            // Mat
+            ctx.fillStyle = '#263238';
+            ctx.fillRect(canvas.width * 0.04, canvas.height * 0.55, canvas.width * 0.92, canvas.height * 0.45);
+
+            // Ropes
+            for (let i = 0; i < 3; i++) {
+                const y = canvas.height * (0.42 + i * 0.06);
+                ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(0, y + 2);
+                ctx.lineTo(canvas.width, y + 2);
+                ctx.stroke();
+                ctx.strokeStyle = i === 1 ? '#ff1744' : '#d50000';
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+
+            // Posts
+            ctx.fillStyle = '#b71c1c';
+            ctx.fillRect(canvas.width * 0.04 - 6, canvas.height * 0.30, 12, canvas.height * 0.42);
+            ctx.fillRect(canvas.width * 0.96 - 6, canvas.height * 0.30, 12, canvas.height * 0.42);
+
+            // Spotlight
+            const s = ctx.createRadialGradient(canvas.width / 2, canvas.height * 0.6, 20, canvas.width / 2, canvas.height * 0.6, canvas.width * 0.5);
+            s.addColorStop(0, 'rgba(255,255,255,0.06)');
+            s.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.fillStyle = s;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function gameLoop(ts) {
+            const dt = Math.min((ts - lastTime) / 1000, 0.05);
+            lastTime = ts;
+
             if (gameState === 'playing') {
                 update(dt);
             }
             render();
-            
             requestAnimationFrame(gameLoop);
         }
 
         function update(dt) {
             if (!roundActive) return;
-            
-            // Player movement
+
+            // Player move
             if (keys['a'] || keys['arrowleft']) player.move(-1, dt);
             if (keys['d'] || keys['arrowright']) player.move(1, dt);
-            
-            // Update fighters
-            player.update(dt, enemy);
-            enemy.update(dt, player);
-            
-            // AI
+
+            player.update(dt);
+            enemy.update(dt);
             updateAI(dt);
-            
-            // Keep distance minimum
+
+            // Min distance
             const dist = Math.abs(player.x - enemy.x);
-            if (dist < 70) {
+            if (dist < 65) {
                 const mid = (player.x + enemy.x) / 2;
-                player.x = mid - 35;
-                enemy.x = mid + 35;
+                player.x = mid - 32;
+                enemy.x = mid + 32;
             }
-            
-            // Screen shake decay
-            shakeIntensity *= 0.9;
-            if (shakeIntensity < 0.1) shakeIntensity = 0;
-            
-            updateUI();
+
+            // Particles
+            particles = particles.filter(p => {
+                p.x += p.vx * dt;
+                p.y += p.vy * dt;
+                p.vy += 300 * dt;
+                p.life -= dt;
+                return p.life > 0;
+            });
+
+            shake *= 0.9;
+            if (shake < 0.5) shake = 0;
         }
 
         function render() {
             ctx.save();
-            
-            // Screen shake
-            if (shakeIntensity > 0) {
-                ctx.translate(
-                    (Math.random() - 0.5) * shakeIntensity * 2,
-                    (Math.random() - 0.5) * shakeIntensity * 2
-                );
+            if (shake > 0) {
+                ctx.translate((Math.random() - 0.5) * shake * 2, (Math.random() - 0.5) * shake * 2);
             }
-            
-            // Clear
-            ctx.fillStyle = '#1a1a2e';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw ring background
-            if (ringImg.complete) {
-                ctx.drawImage(ringImg, 0, 0, canvas.width, canvas.height);
-            } else {
-                // Fallback gradient
-                const grad = ctx.createLinearGradient(0, 0, 0, canvas.height);
-                grad.addColorStop(0, '#0a0a1a');
-                grad.addColorStop(0.5, '#1a1a3e');
-                grad.addColorStop(1, '#0a0a1a');
-                ctx.fillStyle = grad;
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                
-                // Ring floor
-                ctx.fillStyle = '#2a2a4a';
-                ctx.fillRect(0, canvas.height * 0.7, canvas.width, canvas.height * 0.3);
-                
-                // Ropes
-                ctx.strokeStyle = '#c62828';
-                ctx.lineWidth = 4;
-                for (let i = 0; i < 3; i++) {
-                    const y = canvas.height * 0.5 + i * 60;
-                    ctx.beginPath();
-                    ctx.moveTo(0, y);
-                    ctx.lineTo(canvas.width, y);
-                    ctx.stroke();
-                }
-            }
-            
-            // Draw fighters
+
+            drawRing();
+
             if (player && enemy) {
                 player.draw(ctx);
                 enemy.draw(ctx);
             }
-            
+
+            // Particles
+            particles.forEach(p => {
+                ctx.globalAlpha = p.life / 0.5;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
             ctx.restore();
         }
 
-        // ==================== GAME FLOW ====================
-
-        function startGame() {
-            document.getElementById('titleScreen').classList.add('hidden');
-            document.getElementById('gameOverScreen').classList.add('hidden');
-            document.getElementById('instructionsScreen').classList.add('hidden');
-            gameState = 'playing';
-            initGame();
-            lastTime = performance.now();
-        }
-
-        function showInstructions() {
-            document.getElementById('titleScreen').classList.add('hidden');
-            document.getElementById('instructionsScreen').classList.remove('hidden');
-        }
-
-        function showTitle() {
-            document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
-            document.getElementById('titleScreen').classList.remove('hidden');
-            gameState = 'menu';
-            clearInterval(roundTimerInterval);
-        }
-
-        function pauseGame() {
-            if (gameState !== 'playing') return;
-            gameState = 'paused';
-            document.getElementById('pauseScreen').classList.remove('hidden');
-        }
-
-        function resumeGame() {
-            gameState = 'playing';
-            document.getElementById('pauseScreen').classList.add('hidden');
-            lastTime = performance.now();
-        }
-
-        function endRound() {
-            roundActive = false;
-            clearInterval(roundTimerInterval);
-            
-            if (round >= maxRounds) {
-                endFight(player.health > enemy.health);
-            } else {
-                round++;
-                timeRemaining = roundTime;
-                player.health = Math.min(player.maxHealth, player.health + 30);
-                enemy.health = Math.min(enemy.maxHealth, enemy.health + 30);
-                player.stamina = player.maxStamina;
-                enemy.stamina = enemy.maxStamina;
-                showNotification(`ROUND ${round}`);
-                setTimeout(() => {
-                    roundActive = true;
-                    startRoundTimer();
-                }, 2000);
-            }
-        }
-
-        function endFight(playerWon) {
-            gameState = 'gameover';
-            roundActive = false;
-            clearInterval(roundTimerInterval);
-            
-            const resultTitle = document.getElementById('resultTitle');
-            const finalScore = document.getElementById('finalScore');
-            
-            if (playerWon) {
-                resultTitle.textContent = 'VICTORY!';
-                resultTitle.className = 'result-title win';
-                score += 500 + (maxCombo * 100);
-            } else if (enemy.health > player.health) {
-                resultTitle.textContent = 'DEFEAT...';
-                resultTitle.className = 'result-title lose';
-            } else {
-                resultTitle.textContent = 'DRAW';
-                resultTitle.className = 'result-title draw';
-            }
-            
-            finalScore.textContent = `Score: ${score} | Max Combo: ${maxCombo}`;
-            document.getElementById('gameOverScreen').classList.remove('hidden');
-        }
-
-        // Start loop
+        // ==================== START ====================
         requestAnimationFrame(gameLoop);
     </script>
 </body>

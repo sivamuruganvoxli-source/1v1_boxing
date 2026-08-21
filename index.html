@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Boxing Champion - 100 Levels</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; touch-action: none; user-select: none; -webkit-user-select: none; }
@@ -24,6 +24,12 @@
       max-height: 600px;
       background: #0f0f1a;
       overflow: hidden;
+    }
+    @media (max-width: 767px) {
+      #game-container {
+        max-height: none;
+        height: 100dvh;
+      }
     }
     canvas {
       display: block;
@@ -128,51 +134,87 @@
       text-align: center;
       pointer-events: none;
     }
+    @media (max-width: 767px) {
+      .controls-hint {
+        bottom: max(135px, 28vw);
+        font-size: clamp(0.55rem, 1.6vw, 0.8rem);
+      }
+    }
     .touch-controls {
       position: absolute;
-      bottom: 60px;
+      bottom: max(10px, env(safe-area-inset-bottom, 0px));
       width: 100%;
       display: flex;
       justify-content: space-between;
-      padding: 0 20px;
+      align-items: flex-end;
+      padding: 0 clamp(8px, 3vw, 20px);
       z-index: 5;
+      pointer-events: none;
+    }
+    .touch-controls > * {
+      pointer-events: auto;
     }
     .touch-btn {
-      width: 70px;
-      height: 70px;
+      width: clamp(60px, 18vw, 85px);
+      height: clamp(60px, 18vw, 85px);
       border-radius: 50%;
-      background: rgba(255,255,255,0.15);
-      border: 2px solid rgba(255,255,255,0.3);
+      background: rgba(255,255,255,0.18);
+      border: 2px solid rgba(255,255,255,0.35);
       color: white;
-      font-size: 24px;
+      font-size: clamp(20px, 6vw, 32px);
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
       touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform 0.05s, background 0.15s;
     }
-    .touch-btn:active { background: rgba(255,255,255,0.3); }
-    .touch-left { margin-right: auto; }
-    .touch-right { margin-left: 10px; }
+    .touch-btn:active, .touch-btn.pressed {
+      background: rgba(255,255,255,0.4);
+      transform: scale(0.92);
+    }
+    .touch-left { margin-right: 6px; }
+    .touch-right { margin-left: 6px; }
     .touch-actions {
       display: flex;
-      gap: 10px;
+      gap: clamp(6px, 2vw, 14px);
+      align-items: flex-end;
     }
     .touch-punch {
-      width: 80px;
-      height: 80px;
+      width: clamp(68px, 20vw, 95px);
+      height: clamp(68px, 20vw, 95px);
       border-radius: 50%;
-      background: rgba(255,107,107,0.3);
-      border: 2px solid rgba(255,107,107,0.5);
+      background: rgba(255,107,107,0.35);
+      border: 2px solid rgba(255,107,107,0.6);
       color: white;
-      font-size: 14px;
+      font-size: clamp(12px, 3.5vw, 16px);
       font-weight: bold;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+      transition: transform 0.05s, background 0.15s;
     }
-    .touch-punch:active { background: rgba(255,107,107,0.5); }
+    .touch-punch:active, .touch-punch.pressed {
+      background: rgba(255,107,107,0.6);
+      transform: scale(0.92);
+    }
+    .touch-punch.block-btn {
+      background: rgba(78,205,196,0.35);
+      border-color: rgba(78,205,196,0.6);
+    }
+    .touch-punch.block-btn:active, .touch-punch.block-btn.pressed {
+      background: rgba(78,205,196,0.6);
+    }
     .combo-text {
       position: absolute;
       color: #ffd700;
@@ -242,13 +284,23 @@
     </div>
     
     <div class="touch-controls" id="touchControls" style="display:none;">
-      <div style="display:flex;">
-        <div class="touch-btn touch-left" id="btnLeft">←</div>
-        <div class="touch-btn touch-right" id="btnRight">→</div>
+      <div style="display:flex;align-items:flex-end;">
+        <div class="touch-btn touch-left" id="btnLeft" aria-label="Move Left">
+          <svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </div>
+        <div class="touch-btn touch-right" id="btnRight" aria-label="Move Right">
+          <svg width="60%" height="60%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </div>
       </div>
       <div class="touch-actions">
-        <div class="touch-punch" id="btnPunch">PUNCH</div>
-        <div class="touch-punch" id="btnBlock" style="background:rgba(78,205,196,0.3);border-color:rgba(78,205,196,0.5);">BLOCK</div>
+        <div class="touch-punch" id="btnPunch" aria-label="Punch">
+          <svg width="40%" height="40%" viewBox="0 0 24 24" fill="currentColor" style="margin-bottom:2px;"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>
+          <span style="font-size:10px;position:absolute;bottom:8px;">PUNCH</span>
+        </div>
+        <div class="touch-punch block-btn" id="btnBlock" aria-label="Block">
+          <svg width="40%" height="40%" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:2px;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span style="font-size:10px;position:absolute;bottom:8px;">BLOCK</span>
+        </div>
       </div>
     </div>
     
@@ -303,6 +355,7 @@
     function resize() {
       canvas.width = container.clientWidth;
       canvas.height = container.clientHeight;
+      rescaleFighters();
     }
     resize();
     window.addEventListener('resize', resize);
@@ -317,18 +370,24 @@
     const keys = {};
     const touchState = { left: false, right: false, punch: false, block: false };
     
+    // Scale helpers for responsive sizing
+    function getScale() {
+      return Math.min(canvas.width / 400, canvas.height / 300, 1.5);
+    }
+    
     // Fighter class
     class Fighter {
       constructor(x, isPlayer, level) {
         this.x = x;
-        this.y = canvas.height - 120;
-        this.width = 50;
-        this.height = 90;
+        this.baseScale = getScale();
+        this.y = canvas.height - 100 * this.baseScale;
+        this.width = 50 * this.baseScale;
+        this.height = 90 * this.baseScale;
         this.isPlayer = isPlayer;
         this.maxHealth = isPlayer ? 100 : 80 + level * 2;
         this.health = this.maxHealth;
-        this.speed = isPlayer ? 4 : 2 + level * 0.08;
-        this.punchRange = 70;
+        this.speed = (isPlayer ? 4 : 2 + level * 0.08) * this.baseScale;
+        this.punchRange = 70 * this.baseScale;
         this.punchDamage = isPlayer ? 12 : 8 + level * 0.5;
         this.punchCooldown = 0;
         this.blocking = false;
@@ -352,6 +411,16 @@
         this.dodgeChance = Math.min(0.05 + level * 0.008, 0.6);
         this.counterChance = Math.min(0.03 + level * 0.006, 0.5);
         this.aggression = Math.min(0.3 + level * 0.015, 0.95);
+      }
+      
+      rescale() {
+        const s = getScale();
+        this.baseScale = s;
+        this.y = canvas.height - 100 * s;
+        this.width = 50 * s;
+        this.height = 90 * s;
+        this.speed = (this.isPlayer ? 4 : 2 + currentLevel * 0.08) * s;
+        this.punchRange = 70 * s;
       }
       
       update(dt, opponent) {
@@ -513,9 +582,11 @@
       }
       
       draw(ctx) {
+        const s = this.baseScale;
         ctx.save();
         ctx.translate(this.x, this.y);
         if (this.facing < 0) ctx.scale(-1, 1);
+        ctx.scale(s, s);
         
         // Shadow
         ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -675,8 +746,8 @@
     let player, enemy;
     
     function initLevel() {
-      player = new Fighter(canvas.width * 0.3, true, currentLevel);
-      enemy = new Fighter(canvas.width * 0.7, false, currentLevel);
+      player = new Fighter(canvas.width * 0.25, true, currentLevel);
+      enemy = new Fighter(canvas.width * 0.75, false, currentLevel);
       particles = [];
       floatingTexts = [];
       
@@ -684,6 +755,11 @@
       levelBadge.textContent = 'Level ' + currentLevel;
       enemyNameEl.textContent = getEnemyName(currentLevel);
       updateHealthBars();
+    }
+    
+    function rescaleFighters() {
+      if (player) player.rescale();
+      if (enemy) enemy.rescale();
     }
     
     function getEnemyName(level) {
@@ -710,17 +786,20 @@
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       
       // Ring floor
+      const floorH = Math.min(80, canvas.height * 0.18);
+      const floorY = canvas.height - floorH;
       ctx.fillStyle = '#1a1a2e';
-      ctx.fillRect(0, canvas.height - 80, canvas.width, 80);
+      ctx.fillRect(0, floorY, canvas.width, floorH);
       ctx.strokeStyle = '#333';
-      ctx.lineWidth = 3;
-      ctx.strokeRect(20, canvas.height - 75, canvas.width - 40, 70);
+      ctx.lineWidth = Math.max(2, canvas.width * 0.005);
+      ctx.strokeRect(Math.min(20, canvas.width * 0.03), floorY + 5, canvas.width - Math.min(40, canvas.width * 0.06), floorH - 10);
       
       // Ropes
-      for (let i = 1; i <= 4; i++) {
-        const y = canvas.height - 80 - i * 25;
+      const ropeCount = Math.floor(Math.min(4, canvas.height / 80));
+      for (let i = 1; i <= ropeCount; i++) {
+        const y = floorY - i * Math.min(25, canvas.height * 0.06);
         ctx.strokeStyle = i % 2 === 0 ? '#cc3333' : '#3333cc';
-        ctx.lineWidth = 3;
+        ctx.lineWidth = Math.max(2, canvas.width * 0.004);
         ctx.beginPath();
         ctx.moveTo(0, y);
         ctx.lineTo(canvas.width, y);
@@ -728,9 +807,11 @@
       }
       
       // Posts
+      const postW = Math.max(10, canvas.width * 0.015);
+      const postH = Math.min(100, canvas.height * 0.25);
       ctx.fillStyle = '#444';
-      ctx.fillRect(10, canvas.height - 180, 15, 100);
-      ctx.fillRect(canvas.width - 25, canvas.height - 180, 15, 100);
+      ctx.fillRect(Math.min(10, canvas.width * 0.015), floorY - postH, postW, postH);
+      ctx.fillRect(canvas.width - postW - Math.min(10, canvas.width * 0.015), floorY - postH, postW, postH);
       
       // Update
       if (!paused) {
@@ -777,7 +858,7 @@
         ctx.fillStyle = 'rgba(0,0,0,0.5)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
         ctx.fillStyle = '#ff4444';
-        ctx.font = 'bold ' + Math.min(canvas.width / 5, 80) + 'px Arial';
+        ctx.font = 'bold ' + Math.min(canvas.width / 4, 90) + 'px Arial';
         ctx.textAlign = 'center';
         ctx.fillText('K.O.', canvas.width / 2, canvas.height / 2);
       }
@@ -811,6 +892,10 @@
       startLevel();
     }
     
+    function checkMobile() {
+      return window.innerWidth < 768 || 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    }
+    
     function startLevel() {
       mainMenu.classList.add('hidden');
       levelComplete.classList.add('hidden');
@@ -819,7 +904,7 @@
       statsBar.style.display = 'flex';
       levelBadge.style.display = 'block';
       controlsHint.style.display = 'block';
-      if (window.innerWidth < 768) touchControls.style.display = 'flex';
+      touchControls.style.display = checkMobile() ? 'flex' : 'none';
       
       initLevel();
       gameRunning = true;

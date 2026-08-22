@@ -185,12 +185,22 @@
     .btn.block {
       background: rgba(251,191,36,0.18);
       border-color: rgba(251,191,36,0.45);
-      width: 68px;
-      height: 68px;
+      width: 64px;
+      height: 64px;
     }
     .btn.block:active, .btn.block.active {
       background: rgba(251,191,36,0.55);
       border-color: #fbbf24;
+    }
+
+    .btn.move {
+      background: rgba(34,197,94,0.2);
+      border-color: rgba(34,197,94,0.45);
+      font-size: 18px;
+    }
+    .btn.move:active, .btn.move.active {
+      background: rgba(34,197,94,0.6);
+      border-color: #22c55e;
     }
 
     /* Overlays */
@@ -257,15 +267,18 @@
     }
 
     @media (max-width: 600px) {
-      .btn { width: 54px; height: 54px; font-size: 10px; }
-      .btn.block { width: 62px; height: 62px; }
+      .btn { width: 52px; height: 52px; font-size: 10px; }
+      .btn.block { width: 56px; height: 56px; }
+      .btn.move { font-size: 16px; }
       #keyboard-hint { display: none; }
       #timer { font-size: 22px; }
+      #controls { padding: 10px 8px 18px; gap: 6px; }
     }
 
     @media (min-width: 900px) {
-      .btn { width: 66px; height: 66px; }
-      .btn.block { width: 74px; height: 74px; }
+      .btn { width: 64px; height: 64px; }
+      .btn.block { width: 70px; height: 70px; }
+      .btn.move { font-size: 20px; }
     }
   </style>
 </head>
@@ -294,19 +307,23 @@
       </div>
 
       <div id="keyboard-hint">
-        A / ← Jab &nbsp;•&nbsp; D / → Cross &nbsp;•&nbsp; W / Space Hook &nbsp;•&nbsp; S Block &nbsp;•&nbsp; Q Dodge
+        ← → Move &nbsp;•&nbsp; A Jab &nbsp;•&nbsp; D Cross &nbsp;•&nbsp; W / Space Hook &nbsp;•&nbsp; S Block &nbsp;•&nbsp; Q Dodge
       </div>
     </div>
 
     <div id="controls">
       <div class="btn-group">
+        <div class="btn move" data-action="left">◀</div>
+        <div class="btn move" data-action="right">▶</div>
+      </div>
+      <div class="btn-group" style="flex-direction:column; gap:8px;">
+        <div class="btn block" data-action="block">BLOCK</div>
+        <div class="btn" data-action="dodge">DODGE</div>
+      </div>
+      <div class="btn-group">
         <div class="btn punch" data-action="jab">JAB</div>
         <div class="btn punch" data-action="cross">CROSS</div>
-      </div>
-      <div class="btn block" data-action="block">BLOCK</div>
-      <div class="btn-group">
         <div class="btn punch" data-action="hook">HOOK</div>
-        <div class="btn" data-action="dodge">DODGE</div>
       </div>
     </div>
 
@@ -819,6 +836,7 @@
 
     // ---------- Input ----------
     const activeActions = new Set();
+    const keys = {};
 
     function doAction(action) {
       if (!state.running) return;
@@ -827,40 +845,71 @@
       else if (action === 'hook') hook(playerMesh);
       else if (action === 'block') block(playerMesh);
       else if (action === 'dodge') dodge(playerMesh);
+      // left / right are handled continuously in the game loop
     }
 
+    // Keyboard
     window.addEventListener('keydown', e => {
-      if (e.code === 'KeyA' || e.code === 'ArrowLeft') doAction('jab');
-      if (e.code === 'KeyD' || e.code === 'ArrowRight') doAction('cross');
+      keys[e.code] = true;
+      if (e.code === 'KeyA') doAction('jab');
+      if (e.code === 'KeyD') doAction('cross');
       if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') doAction('hook');
       if (e.code === 'KeyS' || e.code === 'ArrowDown') doAction('block');
       if (e.code === 'KeyQ' || e.code === 'ShiftLeft') doAction('dodge');
+      // ArrowLeft / ArrowRight used for movement (held)
+    });
+    window.addEventListener('keyup', e => {
+      keys[e.code] = false;
     });
 
+    // Buttons – use Pointer Events for reliable touch + mouse
     document.querySelectorAll('.btn').forEach(btn => {
       const action = btn.dataset.action;
+
       const start = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         btn.classList.add('active');
         activeActions.add(action);
         doAction(action);
       };
       const end = (e) => {
         e.preventDefault();
+        e.stopPropagation();
         btn.classList.remove('active');
         activeActions.delete(action);
       };
+
+      btn.addEventListener('pointerdown', start);
+      btn.addEventListener('pointerup', end);
+      btn.addEventListener('pointercancel', end);
+      btn.addEventListener('pointerleave', end);
+      // Extra safety for older touch devices
       btn.addEventListener('touchstart', start, { passive: false });
       btn.addEventListener('touchend', end, { passive: false });
       btn.addEventListener('touchcancel', end, { passive: false });
-      btn.addEventListener('mousedown', start);
-      btn.addEventListener('mouseup', end);
-      btn.addEventListener('mouseleave', end);
     });
 
-    setInterval(() => {
-      if (activeActions.has('block') && state.running) block(playerMesh);
-    }, 90);
+    // Continuous actions (movement + hold block)
+    function processHeldInputs(dt) {
+      if (!state.running) return;
+      const pd = playerMesh.userData;
+      const moveSpeed = 3.8;
+
+      // Movement – on-screen LEFT/RIGHT buttons or Arrow keys
+      let moveDir = 0;
+      if (activeActions.has('left') || keys['ArrowLeft']) moveDir -= 1;
+      if (activeActions.has('right') || keys['ArrowRight']) moveDir += 1;
+
+      if (moveDir !== 0 && pd.state !== 'punch' && pd.state !== 'ko') {
+        pd.velX = moveDir * moveSpeed;
+      }
+
+      // Hold block
+      if (activeActions.has('block') || keys['KeyS'] || keys['ArrowDown']) {
+        block(playerMesh);
+      }
+    }
 
     // ---------- UI ----------
     function updateUI() {
@@ -953,6 +1002,7 @@
       state.lastTime = timestamp;
 
       if (state.running) {
+        processHeldInputs(dt);
         updateFighterState(playerMesh, dt);
         updateFighterState(enemyMesh, dt);
         animateFighter(playerMesh, dt);

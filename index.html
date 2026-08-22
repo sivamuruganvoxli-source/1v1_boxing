@@ -5,12 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="mobile-web-app-capable" content="yes" />
-  <title>Ring Rage – Boxing Game</title>
+  <title>Ring Rage 3D – Boxing Game</title>
   <style>
     :root {
-      --bg: #0f0f13;
-      --ring: #1a1a24;
-      --accent: #ff3b3b;
+      --bg: #0a0a0f;
+      --accent: #ef4444;
       --accent2: #3b82f6;
       --gold: #fbbf24;
       --text: #f1f5f9;
@@ -40,18 +39,19 @@
       height: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      background: radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f13 70%);
+      background: #050508;
+    }
+
+    #canvas-wrap {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
     }
 
     canvas {
       display: block;
-      max-width: 100%;
-      max-height: 70vh;
-      border-radius: 12px;
-      box-shadow: 0 0 40px rgba(255, 59, 59, 0.15);
-      background: #111;
+      width: 100% !important;
+      height: 100% !important;
     }
 
     /* HUD */
@@ -66,17 +66,18 @@
       align-items: flex-start;
       pointer-events: none;
       z-index: 10;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.55), transparent);
     }
 
     .fighter-hud {
-      width: 42%;
-      max-width: 280px;
+      width: 40%;
+      max-width: 260px;
     }
 
     .name {
-      font-size: 13px;
-      font-weight: 700;
-      letter-spacing: 1px;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 1.5px;
       margin-bottom: 4px;
       text-transform: uppercase;
     }
@@ -85,46 +86,47 @@
     .name.enemy  { color: var(--accent); text-align: right; }
 
     .health-bar {
-      height: 18px;
-      background: #222;
-      border-radius: 9px;
+      height: 16px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 8px;
       overflow: hidden;
-      border: 2px solid #333;
+      border: 2px solid rgba(255,255,255,0.15);
       position: relative;
     }
 
     .health-fill {
       height: 100%;
-      transition: width 0.2s ease;
-      border-radius: 7px;
+      transition: width 0.18s ease;
+      border-radius: 6px;
     }
 
-    .player .health-fill { background: linear-gradient(90deg, #2563eb, #3b82f6); }
-    .enemy  .health-fill { background: linear-gradient(90deg, #dc2626, #ef4444); float: right; }
+    .player .health-fill { background: linear-gradient(90deg, #1d4ed8, #3b82f6); }
+    .enemy  .health-fill { background: linear-gradient(90deg, #b91c1c, #ef4444); float: right; }
 
     .health-text {
       position: absolute;
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
-      text-shadow: 0 1px 2px #000;
+      text-shadow: 0 1px 3px #000;
     }
 
     #round-info {
       text-align: center;
-      font-size: 14px;
-      font-weight: 600;
+      font-size: 12px;
+      font-weight: 700;
       color: var(--gold);
-      margin-top: 4px;
+      letter-spacing: 1px;
     }
 
     #timer {
-      font-size: 22px;
-      font-weight: 800;
+      font-size: 26px;
+      font-weight: 900;
       color: #fff;
-      text-shadow: 0 0 12px rgba(255,255,255,0.4);
+      text-shadow: 0 0 16px rgba(255,255,255,0.35);
+      line-height: 1.1;
     }
 
     /* Controls */
@@ -133,60 +135,61 @@
       bottom: 0;
       left: 0;
       right: 0;
-      padding: 16px 12px 24px;
+      padding: 14px 12px 22px;
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      gap: 12px;
+      gap: 10px;
       z-index: 20;
-      background: linear-gradient(transparent, rgba(0,0,0,0.7));
+      background: linear-gradient(transparent, rgba(0,0,0,0.75));
     }
 
     .btn-group {
       display: flex;
-      gap: 10px;
+      gap: 8px;
     }
 
     .btn {
-      width: 64px;
-      height: 64px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
-      border: 3px solid rgba(255,255,255,0.2);
-      background: rgba(30,30,40,0.85);
+      border: 2.5px solid rgba(255,255,255,0.18);
+      background: rgba(20,20,30,0.85);
       color: #fff;
-      font-size: 13px;
-      font-weight: 700;
+      font-size: 11px;
+      font-weight: 800;
       display: flex;
       align-items: center;
       justify-content: center;
       cursor: pointer;
-      transition: transform 0.08s, background 0.1s;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      transition: transform 0.07s, background 0.1s, border-color 0.1s;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+      letter-spacing: 0.5px;
     }
 
     .btn:active, .btn.active {
       transform: scale(0.9);
-      background: rgba(59,130,246,0.6);
+      background: rgba(59,130,246,0.55);
       border-color: #3b82f6;
     }
 
     .btn.punch {
-      background: rgba(239,68,68,0.25);
-      border-color: rgba(239,68,68,0.5);
+      background: rgba(239,68,68,0.22);
+      border-color: rgba(239,68,68,0.45);
     }
     .btn.punch:active, .btn.punch.active {
-      background: rgba(239,68,68,0.7);
+      background: rgba(239,68,68,0.65);
       border-color: #ef4444;
     }
 
     .btn.block {
-      background: rgba(251,191,36,0.2);
-      border-color: rgba(251,191,36,0.5);
-      width: 72px;
-      height: 72px;
+      background: rgba(251,191,36,0.18);
+      border-color: rgba(251,191,36,0.45);
+      width: 68px;
+      height: 68px;
     }
     .btn.block:active, .btn.block.active {
-      background: rgba(251,191,36,0.6);
+      background: rgba(251,191,36,0.55);
       border-color: #fbbf24;
     }
 
@@ -194,7 +197,7 @@
     .overlay {
       position: absolute;
       inset: 0;
-      background: rgba(0,0,0,0.78);
+      background: rgba(0,0,0,0.82);
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -205,111 +208,114 @@
     }
 
     .overlay h1 {
-      font-size: clamp(32px, 8vw, 56px);
+      font-size: clamp(36px, 9vw, 64px);
       font-weight: 900;
-      margin-bottom: 8px;
+      margin-bottom: 10px;
       background: linear-gradient(135deg, #ef4444, #fbbf24);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
       background-clip: text;
+      letter-spacing: 2px;
     }
 
     .overlay p {
-      font-size: 16px;
+      font-size: 15px;
       opacity: 0.85;
-      max-width: 360px;
+      max-width: 340px;
       margin-bottom: 28px;
-      line-height: 1.5;
+      line-height: 1.55;
     }
 
     .overlay button {
-      padding: 14px 36px;
+      padding: 15px 40px;
       font-size: 18px;
-      font-weight: 700;
+      font-weight: 800;
       border: none;
       border-radius: 50px;
       background: linear-gradient(135deg, #ef4444, #dc2626);
       color: white;
       cursor: pointer;
-      box-shadow: 0 6px 20px rgba(239,68,68,0.4);
+      box-shadow: 0 6px 24px rgba(239,68,68,0.45);
       transition: transform 0.15s;
+      letter-spacing: 1px;
     }
     .overlay button:active { transform: scale(0.95); }
 
     .hidden { display: none !important; }
 
-    /* Desktop keyboard hint */
     #keyboard-hint {
       position: absolute;
-      bottom: 110px;
+      bottom: 105px;
       left: 50%;
       transform: translateX(-50%);
-      font-size: 12px;
-      opacity: 0.5;
+      font-size: 11px;
+      opacity: 0.45;
       text-align: center;
       pointer-events: none;
       z-index: 15;
+      white-space: nowrap;
     }
 
     @media (max-width: 600px) {
-      .btn { width: 58px; height: 58px; font-size: 12px; }
-      .btn.block { width: 66px; height: 66px; }
+      .btn { width: 54px; height: 54px; font-size: 10px; }
+      .btn.block { width: 62px; height: 62px; }
       #keyboard-hint { display: none; }
+      #timer { font-size: 22px; }
     }
 
     @media (min-width: 900px) {
-      #controls { padding-bottom: 32px; }
-      .btn { width: 70px; height: 70px; }
+      .btn { width: 66px; height: 66px; }
+      .btn.block { width: 74px; height: 74px; }
     }
   </style>
 </head>
 <body>
   <div id="game-container">
-    <div id="hud">
-      <div class="fighter-hud player">
-        <div class="name player">YOU</div>
-        <div class="health-bar">
-          <div class="health-fill" id="player-health" style="width:100%"></div>
-          <div class="health-text" id="player-hp-text">100</div>
+    <div id="canvas-wrap">
+      <div id="hud">
+        <div class="fighter-hud player">
+          <div class="name player">YOU</div>
+          <div class="health-bar">
+            <div class="health-fill" id="player-health" style="width:100%"></div>
+            <div class="health-text" id="player-hp-text">100</div>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <div id="timer">99</div>
+          <div id="round-info">ROUND 1</div>
+        </div>
+        <div class="fighter-hud enemy">
+          <div class="name enemy">RIVAL</div>
+          <div class="health-bar">
+            <div class="health-fill" id="enemy-health" style="width:100%"></div>
+            <div class="health-text" id="enemy-hp-text">100</div>
+          </div>
         </div>
       </div>
-      <div style="text-align:center">
-        <div id="timer">99</div>
-        <div id="round-info">ROUND 1</div>
-      </div>
-      <div class="fighter-hud enemy">
-        <div class="name enemy">RIVAL</div>
-        <div class="health-bar">
-          <div class="health-fill" id="enemy-health" style="width:100%"></div>
-          <div class="health-text" id="enemy-hp-text">100</div>
-        </div>
-      </div>
-    </div>
 
-    <canvas id="game" width="800" height="450"></canvas>
-
-    <div id="keyboard-hint">
-      A / ← Jab &nbsp;•&nbsp; D / → Cross &nbsp;•&nbsp; S / ↓ Block &nbsp;•&nbsp; Space Punch
+      <div id="keyboard-hint">
+        A / ← Jab &nbsp;•&nbsp; D / → Cross &nbsp;•&nbsp; W / Space Hook &nbsp;•&nbsp; S Block &nbsp;•&nbsp; Q Dodge
+      </div>
     </div>
 
     <div id="controls">
       <div class="btn-group">
-        <div class="btn punch" id="btn-jab" data-action="jab">JAB</div>
-        <div class="btn punch" id="btn-cross" data-action="cross">CROSS</div>
+        <div class="btn punch" data-action="jab">JAB</div>
+        <div class="btn punch" data-action="cross">CROSS</div>
       </div>
-      <div class="btn block" id="btn-block" data-action="block">BLOCK</div>
+      <div class="btn block" data-action="block">BLOCK</div>
       <div class="btn-group">
-        <div class="btn punch" id="btn-hook" data-action="hook">HOOK</div>
-        <div class="btn" id="btn-dodge" data-action="dodge">DODGE</div>
+        <div class="btn punch" data-action="hook">HOOK</div>
+        <div class="btn" data-action="dodge">DODGE</div>
       </div>
     </div>
 
     <!-- Start Screen -->
     <div class="overlay" id="start-screen">
-      <h1>RING RAGE</h1>
-      <p>Defeat your rival in the ring!<br>
-         Land punches, block attacks, and dodge to win.<br>
-         Works on touch & keyboard.</p>
+      <h1>RING RAGE 3D</h1>
+      <p>Step into the 3D ring!<br>
+         Punch, block & dodge to defeat your rival.<br>
+         Optimized for all devices.</p>
       <button id="start-btn">FIGHT!</button>
     </div>
 
@@ -321,32 +327,250 @@
     </div>
   </div>
 
+  <!-- Three.js r128 CDN -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
   <script>
-    // ============== GAME SETUP ==============
-    const canvas = document.getElementById('game');
-    const ctx = canvas.getContext('2d');
+    // =====================================================
+    //  RING RAGE 3D – Three.js Boxing Game
+    // =====================================================
 
-    // Responsive canvas
-    function resizeCanvas() {
-      const maxW = Math.min(window.innerWidth - 16, 900);
-      const maxH = Math.min(window.innerHeight * 0.62, 500);
-      const ratio = 16 / 9;
-      let w = maxW;
-      let h = w / ratio;
-      if (h > maxH) {
-        h = maxH;
-        w = h * ratio;
+    const canvasWrap = document.getElementById('canvas-wrap');
+
+    // ---------- Renderer / Scene / Camera ----------
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(canvasWrap.clientWidth, canvasWrap.clientHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.setClearColor(0x0a0a12);
+    canvasWrap.insertBefore(renderer.domElement, canvasWrap.firstChild);
+
+    const scene = new THREE.Scene();
+    scene.fog = new THREE.Fog(0x0a0a12, 18, 45);
+
+    const camera = new THREE.PerspectiveCamera(45, canvasWrap.clientWidth / canvasWrap.clientHeight, 0.1, 100);
+    camera.position.set(0, 4.2, 9.5);
+    camera.lookAt(0, 1.4, 0);
+
+    // ---------- Lighting ----------
+    const ambient = new THREE.AmbientLight(0x404060, 0.55);
+    scene.add(ambient);
+
+    const spot = new THREE.SpotLight(0xffffff, 1.15, 40, Math.PI / 5, 0.4, 1);
+    spot.position.set(0, 12, 2);
+    spot.target.position.set(0, 0, 0);
+    spot.castShadow = true;
+    spot.shadow.mapSize.set(1024, 1024);
+    spot.shadow.camera.near = 2;
+    spot.shadow.camera.far = 25;
+    scene.add(spot);
+    scene.add(spot.target);
+
+    const fillL = new THREE.DirectionalLight(0x6688ff, 0.35);
+    fillL.position.set(-6, 4, 4);
+    scene.add(fillL);
+
+    const fillR = new THREE.DirectionalLight(0xff6644, 0.25);
+    fillR.position.set(6, 3, 3);
+    scene.add(fillR);
+
+    // ---------- Ring ----------
+    function createRing() {
+      const group = new THREE.Group();
+
+      // Floor / mat
+      const matGeo = new THREE.BoxGeometry(12, 0.25, 12);
+      const matMat = new THREE.MeshStandardMaterial({ color: 0x1a1a28, roughness: 0.85 });
+      const mat = new THREE.Mesh(matGeo, matMat);
+      mat.position.y = -0.12;
+      mat.receiveShadow = true;
+      group.add(mat);
+
+      // Center circle
+      const logoGeo = new THREE.CircleGeometry(1.8, 48);
+      const logoMat = new THREE.MeshStandardMaterial({ color: 0x2a2a3a, roughness: 0.7 });
+      const logo = new THREE.Mesh(logoGeo, logoMat);
+      logo.rotation.x = -Math.PI / 2;
+      logo.position.y = 0.02;
+      group.add(logo);
+
+      // Outer platform
+      const platGeo = new THREE.BoxGeometry(14, 0.4, 14);
+      const platMat = new THREE.MeshStandardMaterial({ color: 0x111118, roughness: 0.9 });
+      const plat = new THREE.Mesh(platGeo, platMat);
+      plat.position.y = -0.45;
+      plat.receiveShadow = true;
+      group.add(plat);
+
+      // Corner posts
+      const postGeo = new THREE.CylinderGeometry(0.12, 0.14, 2.4, 12);
+      const postMat = new THREE.MeshStandardMaterial({ color: 0x555566, metalness: 0.6, roughness: 0.35 });
+      const positions = [[-5.5, -5.5], [5.5, -5.5], [-5.5, 5.5], [5.5, 5.5]];
+      positions.forEach(([x, z]) => {
+        const post = new THREE.Mesh(postGeo, postMat);
+        post.position.set(x, 1.1, z);
+        post.castShadow = true;
+        group.add(post);
+
+        const cap = new THREE.Mesh(
+          new THREE.SphereGeometry(0.18, 12, 12),
+          new THREE.MeshStandardMaterial({ color: 0x888899, metalness: 0.7 })
+        );
+        cap.position.set(x, 2.35, z);
+        group.add(cap);
+      });
+
+      // Ropes using TubeGeometry
+      const ropeMat = new THREE.MeshStandardMaterial({ color: 0xccccdd, metalness: 0.3, roughness: 0.5 });
+      const ropeHeights = [0.7, 1.25, 1.8];
+
+      function addRope(x1, z1, x2, z2, y) {
+        const curve = new THREE.LineCurve3(
+          new THREE.Vector3(x1, y, z1),
+          new THREE.Vector3(x2, y, z2)
+        );
+        const geo = new THREE.TubeGeometry(curve, 1, 0.04, 6, false);
+        const mesh = new THREE.Mesh(geo, ropeMat);
+        mesh.castShadow = true;
+        group.add(mesh);
       }
-      canvas.style.width = w + 'px';
-      canvas.style.height = h + 'px';
-      // Keep internal resolution fixed for consistent gameplay
-      canvas.width = 800;
-      canvas.height = 450;
-    }
-    resizeCanvas();
-    window.addEventListener('resize', resizeCanvas);
 
-    // ============== GAME STATE ==============
+      ropeHeights.forEach(h => {
+        addRope(-5.5, -5.5, 5.5, -5.5, h);
+        addRope(5.5, -5.5, 5.5, 5.5, h);
+        addRope(5.5, 5.5, -5.5, 5.5, h);
+        addRope(-5.5, 5.5, -5.5, -5.5, h);
+      });
+
+      return group;
+    }
+
+    const ring = createRing();
+    scene.add(ring);
+
+    // ---------- Fighter Factory ----------
+    function createFighter(isPlayer) {
+      const group = new THREE.Group();
+      const primary = isPlayer ? 0x2563eb : 0xdc2626;
+      const secondary = isPlayer ? 0x1e40af : 0x991b1b;
+      const skin = isPlayer ? 0xf5d0c5 : 0xe0b090;
+
+      // Legs
+      const legGeo = new THREE.CylinderGeometry(0.14, 0.16, 0.85, 10);
+      const legMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.7 });
+      const leftLeg = new THREE.Mesh(legGeo, legMat);
+      leftLeg.position.set(-0.18, 0.42, 0);
+      leftLeg.castShadow = true;
+      group.add(leftLeg);
+      const rightLeg = new THREE.Mesh(legGeo, legMat);
+      rightLeg.position.set(0.18, 0.42, 0);
+      rightLeg.castShadow = true;
+      group.add(rightLeg);
+
+      // Torso
+      const torsoGeo = new THREE.BoxGeometry(0.7, 0.85, 0.4);
+      const torsoMat = new THREE.MeshStandardMaterial({ color: primary, roughness: 0.55 });
+      const torso = new THREE.Mesh(torsoGeo, torsoMat);
+      torso.position.y = 1.15;
+      torso.castShadow = true;
+      group.add(torso);
+
+      // Head
+      const headGeo = new THREE.SphereGeometry(0.26, 16, 16);
+      const headMat = new THREE.MeshStandardMaterial({ color: skin, roughness: 0.6 });
+      const head = new THREE.Mesh(headGeo, headMat);
+      head.position.y = 1.85;
+      head.castShadow = true;
+      group.add(head);
+
+      // Headgear
+      const gearGeo = new THREE.SphereGeometry(0.28, 16, 12, 0, Math.PI * 2, 0, Math.PI * 0.55);
+      const gearMat = new THREE.MeshStandardMaterial({ color: secondary, roughness: 0.4 });
+      const gear = new THREE.Mesh(gearGeo, gearMat);
+      gear.position.y = 1.92;
+      gear.rotation.x = 0.15;
+      group.add(gear);
+
+      // Arms
+      const upperArmGeo = new THREE.CylinderGeometry(0.1, 0.11, 0.45, 8);
+      const forearmGeo = new THREE.CylinderGeometry(0.09, 0.1, 0.4, 8);
+      const armMat = new THREE.MeshStandardMaterial({ color: skin, roughness: 0.6 });
+      const gloveMat = new THREE.MeshStandardMaterial({ color: secondary, roughness: 0.35, metalness: 0.2 });
+
+      // Left arm
+      const leftArm = new THREE.Group();
+      leftArm.position.set(-0.42, 1.4, 0);
+      const leftUpper = new THREE.Mesh(upperArmGeo, armMat);
+      leftUpper.position.y = -0.2;
+      leftArm.add(leftUpper);
+      const leftFore = new THREE.Group();
+      leftFore.position.y = -0.42;
+      const leftForeMesh = new THREE.Mesh(forearmGeo, armMat);
+      leftForeMesh.position.y = -0.18;
+      leftFore.add(leftForeMesh);
+      const leftGlove = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), gloveMat);
+      leftGlove.position.y = -0.4;
+      leftFore.add(leftGlove);
+      leftArm.add(leftFore);
+      group.add(leftArm);
+
+      // Right arm
+      const rightArm = new THREE.Group();
+      rightArm.position.set(0.42, 1.4, 0);
+      const rightUpper = new THREE.Mesh(upperArmGeo, armMat);
+      rightUpper.position.y = -0.2;
+      rightArm.add(rightUpper);
+      const rightFore = new THREE.Group();
+      rightFore.position.y = -0.42;
+      const rightForeMesh = new THREE.Mesh(forearmGeo, armMat);
+      rightForeMesh.position.y = -0.18;
+      rightFore.add(rightForeMesh);
+      const rightGlove = new THREE.Mesh(new THREE.SphereGeometry(0.16, 12, 12), gloveMat);
+      rightGlove.position.y = -0.4;
+      rightFore.add(rightGlove);
+      rightArm.add(rightFore);
+      group.add(rightArm);
+
+      // Store references
+      group.userData = {
+        isPlayer,
+        leftArm,
+        rightArm,
+        leftFore,
+        rightFore,
+        leftGlove,
+        rightGlove,
+        torso,
+        head,
+        leftLeg,
+        rightLeg,
+        hp: 100,
+        maxHp: 100,
+        state: 'idle',
+        stateTimer: 0,
+        punchType: null,
+        punchCooldown: 0,
+        blockCooldown: 0,
+        dodgeCooldown: 0,
+        invuln: 0,
+        hitFlash: 0,
+        facing: isPlayer ? 1 : -1,
+        velX: 0
+      };
+
+      group.position.set(isPlayer ? -2.2 : 2.2, 0, 0);
+      if (!isPlayer) group.rotation.y = Math.PI;
+
+      return group;
+    }
+
+    const playerMesh = createFighter(true);
+    const enemyMesh  = createFighter(false);
+    scene.add(playerMesh);
+    scene.add(enemyMesh);
+
+    // ---------- Game State ----------
     const state = {
       running: false,
       timeLeft: 99,
@@ -356,211 +580,263 @@
       shake: 0
     };
 
-    // Fighter class
-    class Fighter {
-      constructor(x, facing, isPlayer) {
-        this.x = x;
-        this.y = 320;
-        this.facing = facing; // 1 = right, -1 = left
-        this.isPlayer = isPlayer;
-        this.hp = 100;
-        this.maxHp = 100;
-        this.state = 'idle'; // idle, punch, block, hit, dodge, ko
-        this.stateTimer = 0;
-        this.punchType = null;
-        this.punchCooldown = 0;
-        this.blockCooldown = 0;
-        this.dodgeCooldown = 0;
-        this.invuln = 0;
-        this.color = isPlayer ? '#3b82f6' : '#ef4444';
-        this.skin = isPlayer ? '#f5d0c5' : '#e8b4a0';
-        this.glove = isPlayer ? '#1e40af' : '#991b1b';
-        this.velocityX = 0;
-        this.hitFlash = 0;
+    function setState(mesh, newState, duration, punchType = null) {
+      const d = mesh.userData;
+      d.state = newState;
+      d.stateTimer = duration;
+      d.punchType = punchType;
+    }
+
+    function jab(mesh) {
+      const d = mesh.userData;
+      if (d.punchCooldown > 0 || d.state === 'block' || d.state === 'dodge' || d.state === 'ko') return false;
+      setState(mesh, 'punch', 0.30, 'jab');
+      d.punchCooldown = 0.48;
+      return true;
+    }
+
+    function cross(mesh) {
+      const d = mesh.userData;
+      if (d.punchCooldown > 0 || d.state === 'block' || d.state === 'dodge' || d.state === 'ko') return false;
+      setState(mesh, 'punch', 0.40, 'cross');
+      d.punchCooldown = 0.68;
+      return true;
+    }
+
+    function hook(mesh) {
+      const d = mesh.userData;
+      if (d.punchCooldown > 0 || d.state === 'block' || d.state === 'dodge' || d.state === 'ko') return false;
+      setState(mesh, 'punch', 0.44, 'hook');
+      d.punchCooldown = 0.78;
+      return true;
+    }
+
+    function block(mesh) {
+      const d = mesh.userData;
+      if (d.blockCooldown > 0 || d.state === 'punch' || d.state === 'ko') return false;
+      setState(mesh, 'block', 0.55);
+      d.blockCooldown = 0.25;
+      return true;
+    }
+
+    function dodge(mesh) {
+      const d = mesh.userData;
+      if (d.dodgeCooldown > 0 || d.state === 'punch' || d.state === 'ko') return false;
+      setState(mesh, 'dodge', 0.38);
+      d.dodgeCooldown = 0.95;
+      d.invuln = 0.38;
+      d.velX = -d.facing * 4.5;
+      return true;
+    }
+
+    function takeHit(mesh, damage) {
+      const d = mesh.userData;
+      if (d.invuln > 0 || d.state === 'ko') return false;
+
+      if (d.state === 'block') {
+        damage *= 0.22;
+        d.stateTimer = 0.18;
+      } else if (d.state === 'dodge') {
+        return false;
       }
 
-      update(dt) {
-        if (this.state === 'ko') return;
+      d.hp = Math.max(0, d.hp - damage);
+      d.hitFlash = 0.18;
+      setState(mesh, 'hit', 0.28);
+      d.velX = -d.facing * 3.2;
+      d.invuln = 0.22;
 
-        this.stateTimer -= dt;
-        this.punchCooldown = Math.max(0, this.punchCooldown - dt);
-        this.blockCooldown = Math.max(0, this.blockCooldown - dt);
-        this.dodgeCooldown = Math.max(0, this.dodgeCooldown - dt);
-        this.invuln = Math.max(0, this.invuln - dt);
-        this.hitFlash = Math.max(0, this.hitFlash - dt);
+      if (d.hp <= 0) {
+        setState(mesh, 'ko', 999);
+      }
+      return true;
+    }
 
-        // Return to idle
-        if (this.stateTimer <= 0 && this.state !== 'idle' && this.state !== 'ko') {
-          this.state = 'idle';
-          this.punchType = null;
+    // ---------- Animation ----------
+    function animateFighter(mesh, dt) {
+      const d = mesh.userData;
+      const t = d.stateTimer;
+      const progress = d.state === 'punch' ? 1 - (t / (d.punchType === 'jab' ? 0.30 : d.punchType === 'cross' ? 0.40 : 0.44)) : 0;
+
+      // Base pose
+      d.leftArm.rotation.set(0, 0, 0.25);
+      d.rightArm.rotation.set(0, 0, -0.25);
+      d.leftFore.rotation.set(0, 0, 0);
+      d.rightFore.rotation.set(0, 0, 0);
+      d.torso.rotation.set(0, 0, 0);
+      d.head.rotation.set(0, 0, 0);
+      d.leftArm.position.set(-0.42, 1.4, 0);
+      d.rightArm.position.set(0.42, 1.4, 0);
+
+      if (d.state === 'punch') {
+        const extend = Math.sin(progress * Math.PI);
+        if (d.punchType === 'jab') {
+          d.rightArm.rotation.x = -extend * 1.5;
+          d.rightFore.rotation.x = -extend * 0.9;
+          d.rightArm.position.z = extend * 0.35;
+          d.torso.rotation.y = extend * 0.25 * d.facing;
+        } else if (d.punchType === 'cross') {
+          d.leftArm.rotation.x = -extend * 1.7;
+          d.leftFore.rotation.x = -extend * 1.0;
+          d.leftArm.position.z = extend * 0.45;
+          d.torso.rotation.y = -extend * 0.4 * d.facing;
+          d.rightArm.rotation.x = 0.3;
+        } else { // hook
+          d.rightArm.rotation.x = -extend * 1.1;
+          d.rightArm.rotation.y = -extend * 1.3 * d.facing;
+          d.rightFore.rotation.x = -extend * 0.7;
+          d.torso.rotation.y = extend * 0.5 * d.facing;
+          d.head.rotation.y = extend * 0.2 * d.facing;
         }
-
-        // Simple movement toward center / back
-        this.x += this.velocityX * dt;
-        this.velocityX *= 0.85;
-
-        // Clamp position
-        if (this.isPlayer) {
-          this.x = Math.max(80, Math.min(320, this.x));
-        } else {
-          this.x = Math.max(480, Math.min(720, this.x));
-        }
+      } else if (d.state === 'block') {
+        d.leftArm.rotation.x = -1.3;
+        d.rightArm.rotation.x = -1.3;
+        d.leftFore.rotation.x = -0.6;
+        d.rightFore.rotation.x = -0.6;
+        d.leftArm.position.z = 0.25;
+        d.rightArm.position.z = 0.25;
+        d.torso.rotation.x = 0.15;
+      } else if (d.state === 'hit') {
+        d.leftArm.rotation.x = 0.5;
+        d.rightArm.rotation.x = 0.5;
+        d.torso.rotation.x = -0.25;
+        d.head.rotation.x = 0.3;
+      } else if (d.state === 'dodge') {
+        d.leftArm.rotation.x = -0.8;
+        d.rightArm.rotation.x = 0.4;
+        d.torso.rotation.z = 0.35 * d.facing;
+        d.head.rotation.z = 0.2 * d.facing;
+      } else if (d.state === 'ko') {
+        d.torso.rotation.x = 1.1;
+        d.head.rotation.x = 0.6;
+        d.leftArm.rotation.x = 0.8;
+        d.rightArm.rotation.x = 0.8;
+        mesh.position.y = Math.max(-0.35, mesh.position.y - dt * 1.5);
       }
 
-      jab() {
-        if (this.punchCooldown > 0 || this.state === 'block' || this.state === 'dodge' || this.state === 'ko') return false;
-        this.state = 'punch';
-        this.punchType = 'jab';
-        this.stateTimer = 0.28;
-        this.punchCooldown = 0.45;
-        return true;
+      // Idle breathing
+      if (d.state === 'idle') {
+        const breath = Math.sin(Date.now() * 0.004) * 0.02;
+        d.torso.position.y = breath;
+        d.head.position.y = 1.85 + breath;
+      } else {
+        d.torso.position.y = 0;
+        d.head.position.y = 1.85;
       }
 
-      cross() {
-        if (this.punchCooldown > 0 || this.state === 'block' || this.state === 'dodge' || this.state === 'ko') return false;
-        this.state = 'punch';
-        this.punchType = 'cross';
-        this.stateTimer = 0.38;
-        this.punchCooldown = 0.65;
-        return true;
+      // Hit flash
+      if (d.hitFlash > 0) {
+        d.hitFlash -= dt;
+        d.torso.material.emissive.setHex(0xff2222);
+        d.torso.material.emissiveIntensity = d.hitFlash * 5;
+      } else {
+        d.torso.material.emissiveIntensity = 0;
       }
 
-      hook() {
-        if (this.punchCooldown > 0 || this.state === 'block' || this.state === 'dodge' || this.state === 'ko') return false;
-        this.state = 'punch';
-        this.punchType = 'hook';
-        this.stateTimer = 0.42;
-        this.punchCooldown = 0.75;
-        return true;
+      // Movement
+      d.velX *= 0.88;
+      mesh.position.x += d.velX * dt;
+
+      // Clamp ring bounds
+      if (d.isPlayer) {
+        mesh.position.x = Math.max(-4.2, Math.min(-0.6, mesh.position.x));
+      } else {
+        mesh.position.x = Math.max(0.6, Math.min(4.2, mesh.position.x));
       }
 
-      block() {
-        if (this.blockCooldown > 0 || this.state === 'punch' || this.state === 'ko') return false;
-        this.state = 'block';
-        this.stateTimer = 0.6;
-        this.blockCooldown = 0.3;
-        return true;
-      }
-
-      dodge() {
-        if (this.dodgeCooldown > 0 || this.state === 'punch' || this.state === 'ko') return false;
-        this.state = 'dodge';
-        this.stateTimer = 0.35;
-        this.dodgeCooldown = 0.9;
-        this.velocityX = this.facing * -180;
-        this.invuln = 0.35;
-        return true;
-      }
-
-      takeHit(damage, type) {
-        if (this.invuln > 0 || this.state === 'ko') return false;
-
-        if (this.state === 'block') {
-          damage *= 0.25; // heavy reduction
-          this.stateTimer = 0.2;
-        } else if (this.state === 'dodge') {
-          return false; // missed
-        }
-
-        this.hp = Math.max(0, this.hp - damage);
-        this.hitFlash = 0.15;
-        this.state = 'hit';
-        this.stateTimer = 0.25;
-        this.velocityX = this.facing * -120;
-        this.invuln = 0.2;
-
-        if (this.hp <= 0) {
-          this.state = 'ko';
-          this.stateTimer = 999;
-        }
-        return true;
-      }
-
-      // Hitbox for punches
-      getPunchHitbox() {
-        if (this.state !== 'punch' || this.stateTimer > 0.22) return null; // only active in middle of punch
-        const reach = this.punchType === 'jab' ? 95 : this.punchType === 'cross' ? 110 : 100;
-        const yOff = this.punchType === 'hook' ? -30 : -10;
-        return {
-          x: this.x + this.facing * reach,
-          y: this.y + yOff,
-          r: this.punchType === 'jab' ? 22 : 28
-        };
-      }
-
-      getBodyHitbox() {
-        return {
-          x: this.x,
-          y: this.y - 20,
-          r: 38
-        };
+      // Slight face toward center
+      if (d.isPlayer) {
+        mesh.rotation.y = 0.12;
+      } else {
+        mesh.rotation.y = Math.PI - 0.12;
       }
     }
 
-    const player = new Fighter(180, 1, true);
-    const enemy  = new Fighter(620, -1, false);
-
-    // ============== AI ==============
+    // ---------- AI ----------
     let aiTimer = 0;
     function updateAI(dt) {
-      if (enemy.state === 'ko' || !state.running) return;
+      const ed = enemyMesh.userData;
+      if (ed.state === 'ko' || !state.running) return;
       aiTimer -= dt;
       if (aiTimer > 0) return;
 
-      const dist = Math.abs(enemy.x - player.x);
+      const dist = Math.abs(enemyMesh.position.x - playerMesh.position.x);
       const rand = Math.random();
+      const pd = playerMesh.userData;
 
-      if (player.state === 'punch' && dist < 160) {
-        // React to player punch
-        if (rand < 0.45) enemy.block();
-        else if (rand < 0.7) enemy.dodge();
-        else enemy.jab();
-        aiTimer = 0.4 + Math.random() * 0.3;
-      } else if (dist < 140) {
-        // Close range – attack or defend
-        if (rand < 0.35) enemy.jab();
-        else if (rand < 0.55) enemy.cross();
-        else if (rand < 0.7) enemy.hook();
-        else if (rand < 0.85) enemy.block();
-        else enemy.dodge();
-        aiTimer = 0.5 + Math.random() * 0.5;
+      if (pd.state === 'punch' && dist < 3.2) {
+        if (rand < 0.4) block(enemyMesh);
+        else if (rand < 0.65) dodge(enemyMesh);
+        else jab(enemyMesh);
+        aiTimer = 0.35 + Math.random() * 0.3;
+      } else if (dist < 2.8) {
+        if (rand < 0.32) jab(enemyMesh);
+        else if (rand < 0.52) cross(enemyMesh);
+        else if (rand < 0.68) hook(enemyMesh);
+        else if (rand < 0.82) block(enemyMesh);
+        else dodge(enemyMesh);
+        aiTimer = 0.45 + Math.random() * 0.45;
       } else {
-        // Move closer
-        enemy.velocityX = enemy.facing * 60;
-        if (rand < 0.3) {
-          enemy.jab();
-          aiTimer = 0.6;
+        ed.velX = -ed.facing * 1.8;
+        if (rand < 0.25) {
+          jab(enemyMesh);
+          aiTimer = 0.55;
         } else {
-          aiTimer = 0.3 + Math.random() * 0.4;
+          aiTimer = 0.25 + Math.random() * 0.35;
         }
       }
     }
 
-    // ============== INPUT ==============
-    const keys = {};
+    // ---------- Hit Detection ----------
+    function checkHits() {
+      const pd = playerMesh.userData;
+      const ed = enemyMesh.userData;
+
+      if (pd.state === 'punch' && pd.stateTimer < 0.22 && pd.stateTimer > 0.08) {
+        const reach = pd.punchType === 'jab' ? 2.15 : pd.punchType === 'cross' ? 2.45 : 2.25;
+        const dist = Math.abs(playerMesh.position.x - enemyMesh.position.x);
+        if (dist < reach) {
+          const dmg = pd.punchType === 'jab' ? 6 : pd.punchType === 'cross' ? 11 : 14;
+          if (takeHit(enemyMesh, dmg)) {
+            state.shake = 0.18;
+            pd.stateTimer = 0.06;
+          }
+        }
+      }
+
+      if (ed.state === 'punch' && ed.stateTimer < 0.22 && ed.stateTimer > 0.08) {
+        const reach = ed.punchType === 'jab' ? 2.15 : ed.punchType === 'cross' ? 2.45 : 2.25;
+        const dist = Math.abs(playerMesh.position.x - enemyMesh.position.x);
+        if (dist < reach) {
+          const dmg = ed.punchType === 'jab' ? 5 : ed.punchType === 'cross' ? 9 : 12;
+          if (takeHit(playerMesh, dmg)) {
+            state.shake = 0.18;
+            ed.stateTimer = 0.06;
+          }
+        }
+      }
+    }
+
+    // ---------- Input ----------
     const activeActions = new Set();
 
     function doAction(action) {
       if (!state.running) return;
-      if (action === 'jab') player.jab();
-      else if (action === 'cross') player.cross();
-      else if (action === 'hook') player.hook();
-      else if (action === 'block') player.block();
-      else if (action === 'dodge') player.dodge();
+      if (action === 'jab') jab(playerMesh);
+      else if (action === 'cross') cross(playerMesh);
+      else if (action === 'hook') hook(playerMesh);
+      else if (action === 'block') block(playerMesh);
+      else if (action === 'dodge') dodge(playerMesh);
     }
 
-    // Keyboard
     window.addEventListener('keydown', e => {
-      keys[e.code] = true;
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') doAction('jab');
       if (e.code === 'KeyD' || e.code === 'ArrowRight') doAction('cross');
       if (e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'Space') doAction('hook');
       if (e.code === 'KeyS' || e.code === 'ArrowDown') doAction('block');
       if (e.code === 'KeyQ' || e.code === 'ShiftLeft') doAction('dodge');
     });
-    window.addEventListener('keyup', e => { keys[e.code] = false; });
 
-    // Touch / mouse buttons
     document.querySelectorAll('.btn').forEach(btn => {
       const action = btn.dataset.action;
       const start = (e) => {
@@ -582,280 +858,23 @@
       btn.addEventListener('mouseleave', end);
     });
 
-    // Continuous block while held
     setInterval(() => {
-      if (activeActions.has('block') && state.running) {
-        player.block();
-      }
-    }, 100);
+      if (activeActions.has('block') && state.running) block(playerMesh);
+    }, 90);
 
-    // ============== COMBAT ==============
-    function checkHits() {
-      // Player punches enemy
-      const pHit = player.getPunchHitbox();
-      if (pHit) {
-        const eBody = enemy.getBodyHitbox();
-        const dx = pHit.x - eBody.x;
-        const dy = pHit.y - eBody.y;
-        if (Math.hypot(dx, dy) < pHit.r + eBody.r) {
-          let dmg = player.punchType === 'jab' ? 6 : player.punchType === 'cross' ? 11 : 14;
-          if (enemy.takeHit(dmg, player.punchType)) {
-            state.shake = 8;
-            // Prevent multi-hit same punch
-            player.stateTimer = Math.min(player.stateTimer, 0.05);
-          }
-        }
-      }
-
-      // Enemy punches player
-      const eHit = enemy.getPunchHitbox();
-      if (eHit) {
-        const pBody = player.getBodyHitbox();
-        const dx = eHit.x - pBody.x;
-        const dy = eHit.y - pBody.y;
-        if (Math.hypot(dx, dy) < eHit.r + pBody.r) {
-          let dmg = enemy.punchType === 'jab' ? 5 : enemy.punchType === 'cross' ? 9 : 12;
-          if (player.takeHit(dmg, enemy.punchType)) {
-            state.shake = 8;
-            enemy.stateTimer = Math.min(enemy.stateTimer, 0.05);
-          }
-        }
-      }
-    }
-
-    // ============== DRAWING ==============
-    function drawRing() {
-      // Floor
-      ctx.fillStyle = '#1c1c28';
-      ctx.fillRect(0, 360, 800, 90);
-
-      // Ring mat
-      ctx.fillStyle = '#2a2a3a';
-      ctx.beginPath();
-      ctx.moveTo(40, 360);
-      ctx.lineTo(760, 360);
-      ctx.lineTo(720, 440);
-      ctx.lineTo(80, 440);
-      ctx.closePath();
-      ctx.fill();
-
-      // Mat pattern
-      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
-      ctx.lineWidth = 2;
-      for (let i = 0; i < 8; i++) {
-        ctx.beginPath();
-        ctx.moveTo(60 + i * 90, 360);
-        ctx.lineTo(100 + i * 80, 440);
-        ctx.stroke();
-      }
-
-      // Ropes
-      const ropeY = [280, 310, 340];
-      ropeY.forEach((y, i) => {
-        ctx.strokeStyle = i === 1 ? '#c0c0c0' : '#888';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.moveTo(50, y);
-        ctx.lineTo(750, y);
-        ctx.stroke();
-      });
-
-      // Corner posts
-      ctx.fillStyle = '#444';
-      [[50, 260], [750, 260]].forEach(([x, y]) => {
-        ctx.fillRect(x - 8, y, 16, 110);
-        ctx.fillStyle = '#666';
-        ctx.beginPath();
-        ctx.arc(x, y, 12, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.fillStyle = '#444';
-      });
-    }
-
-    function drawFighter(f) {
-      ctx.save();
-      ctx.translate(f.x, f.y);
-
-      // Hit flash
-      if (f.hitFlash > 0) {
-        ctx.globalAlpha = 0.6 + Math.sin(f.hitFlash * 40) * 0.4;
-      }
-
-      const facing = f.facing;
-      const s = f.state;
-      const t = f.stateTimer;
-
-      // Shadow
-      ctx.fillStyle = 'rgba(0,0,0,0.35)';
-      ctx.beginPath();
-      ctx.ellipse(0, 15, 40, 12, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Legs
-      ctx.fillStyle = '#1e293b';
-      const legSpread = s === 'dodge' ? 18 : 12;
-      ctx.fillRect(-18, -5, 14, 35);
-      ctx.fillRect(4, -5, 14, 35);
-
-      // Body
-      ctx.fillStyle = f.color;
-      let bodyY = -55;
-      if (s === 'block') bodyY = -48;
-      if (s === 'hit') bodyY = -50;
-      ctx.beginPath();
-      ctx.roundRect(-22, bodyY, 44, 55, 8);
-      ctx.fill();
-
-      // Head
-      ctx.fillStyle = f.skin;
-      let headY = bodyY - 28;
-      if (s === 'hit') headY += 4;
-      ctx.beginPath();
-      ctx.arc(0, headY, 20, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Hair / headgear
-      ctx.fillStyle = f.isPlayer ? '#1e3a5f' : '#3f1a1a';
-      ctx.beginPath();
-      ctx.arc(0, headY - 6, 18, Math.PI, 0);
-      ctx.fill();
-
-      // Arms & gloves
-      ctx.fillStyle = f.glove;
-      let leftArmX = -30, leftArmY = -40;
-      let rightArmX = 30, rightArmY = -40;
-      let leftRot = 0, rightRot = 0;
-
-      if (s === 'punch') {
-        const progress = 1 - (t / (f.punchType === 'jab' ? 0.28 : f.punchType === 'cross' ? 0.38 : 0.42));
-        const extend = Math.sin(progress * Math.PI) * 70;
-        if (f.punchType === 'jab') {
-          // Front hand jab
-          rightArmX = facing * (30 + extend);
-          rightArmY = -45;
-        } else if (f.punchType === 'cross') {
-          leftArmX = facing * (30 + extend * 1.1);
-          leftArmY = -50;
-          rightArmX = -20;
-        } else { // hook
-          rightArmX = facing * (25 + extend * 0.9);
-          rightArmY = -70 + Math.sin(progress * Math.PI) * 20;
-        }
-      } else if (s === 'block') {
-        leftArmX = -15; leftArmY = -60;
-        rightArmX = 15; rightArmY = -60;
-      } else if (s === 'hit') {
-        leftArmX = -35; leftArmY = -30;
-        rightArmX = 35; rightArmY = -30;
-      } else if (s === 'dodge') {
-        leftArmX = -25; leftArmY = -55;
-        rightArmX = 25; rightArmY = -35;
-      }
-
-      // Draw gloves
-      ctx.beginPath();
-      ctx.arc(leftArmX, leftArmY, 16, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(rightArmX, rightArmY, 16, 0, Math.PI * 2);
-      ctx.fill();
-
-      // Eyes
-      ctx.fillStyle = '#111';
-      ctx.beginPath();
-      ctx.arc(-7, headY - 2, 3, 0, Math.PI * 2);
-      ctx.arc(7, headY - 2, 3, 0, Math.PI * 2);
-      ctx.fill();
-
-      // KO stars
-      if (s === 'ko') {
-        ctx.fillStyle = '#fbbf24';
-        for (let i = 0; i < 3; i++) {
-          const a = Date.now() / 300 + i * 2;
-          ctx.beginPath();
-          ctx.arc(Math.cos(a) * 30, headY - 40 + Math.sin(a) * 10, 4, 0, Math.PI * 2);
-          ctx.fill();
-        }
-      }
-
-      ctx.restore();
-    }
-
-    function drawEffects() {
-      // Simple impact rings when shake is high
-      if (state.shake > 4) {
-        ctx.strokeStyle = `rgba(255,255,255,${state.shake / 20})`;
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.arc(400, 250, 60 + (8 - state.shake) * 8, 0, Math.PI * 2);
-        ctx.stroke();
-      }
-    }
-
-    function draw() {
-      // Screen shake
-      ctx.save();
-      if (state.shake > 0) {
-        const sx = (Math.random() - 0.5) * state.shake;
-        const sy = (Math.random() - 0.5) * state.shake;
-        ctx.translate(sx, sy);
-        state.shake *= 0.85;
-      }
-
-      // Background
-      ctx.fillStyle = '#12121a';
-      ctx.fillRect(0, 0, 800, 450);
-
-      // Spotlight
-      const grad = ctx.createRadialGradient(400, 100, 50, 400, 200, 400);
-      grad.addColorStop(0, 'rgba(255,255,255,0.06)');
-      grad.addColorStop(1, 'rgba(0,0,0,0)');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, 800, 450);
-
-      drawRing();
-      drawFighter(player);
-      drawFighter(enemy);
-      drawEffects();
-
-      ctx.restore();
-    }
-
-    // ============== UI UPDATE ==============
+    // ---------- UI ----------
     function updateUI() {
-      document.getElementById('player-health').style.width = player.hp + '%';
-      document.getElementById('enemy-health').style.width = enemy.hp + '%';
-      document.getElementById('player-hp-text').textContent = Math.ceil(player.hp);
-      document.getElementById('enemy-hp-text').textContent = Math.ceil(enemy.hp);
+      const pd = playerMesh.userData;
+      const ed = enemyMesh.userData;
+      document.getElementById('player-health').style.width = pd.hp + '%';
+      document.getElementById('enemy-health').style.width = ed.hp + '%';
+      document.getElementById('player-hp-text').textContent = Math.ceil(pd.hp);
+      document.getElementById('enemy-hp-text').textContent = Math.ceil(ed.hp);
       document.getElementById('timer').textContent = Math.ceil(state.timeLeft);
       document.getElementById('round-info').textContent = 'ROUND ' + state.round;
     }
 
-    // ============== GAME LOOP ==============
-    function gameLoop(timestamp) {
-      if (!state.lastTime) state.lastTime = timestamp;
-      const dt = Math.min((timestamp - state.lastTime) / 1000, 0.05);
-      state.lastTime = timestamp;
-
-      if (state.running) {
-        player.update(dt);
-        enemy.update(dt);
-        updateAI(dt);
-        checkHits();
-
-        state.timeLeft -= dt;
-        if (state.timeLeft <= 0) {
-          endFight(player.hp >= enemy.hp ? 'player' : 'enemy');
-        }
-        if (player.hp <= 0) endFight('enemy');
-        if (enemy.hp <= 0) endFight('player');
-      }
-
-      draw();
-      updateUI();
-      requestAnimationFrame(gameLoop);
-    }
-
+    // ---------- Game Flow ----------
     function endFight(winner) {
       state.running = false;
       state.winner = winner;
@@ -865,7 +884,7 @@
         title.textContent = 'YOU WIN!';
         title.style.background = 'linear-gradient(135deg, #22c55e, #fbbf24)';
         title.style.webkitBackgroundClip = 'text';
-        msg.textContent = 'Victory by ' + (enemy.hp <= 0 ? 'KO!' : 'decision!');
+        msg.textContent = enemyMesh.userData.hp <= 0 ? 'Victory by KO!' : 'Victory by decision!';
       } else {
         title.textContent = 'DEFEAT';
         title.style.background = 'linear-gradient(135deg, #ef4444, #991b1b)';
@@ -876,20 +895,22 @@
     }
 
     function startGame() {
-      player.hp = 100;
-      enemy.hp = 100;
-      player.state = 'idle';
-      enemy.state = 'idle';
-      player.x = 180;
-      enemy.x = 620;
-      player.velocityX = 0;
-      enemy.velocityX = 0;
+      const pd = playerMesh.userData;
+      const ed = enemyMesh.userData;
+      pd.hp = 100; ed.hp = 100;
+      pd.state = 'idle'; ed.state = 'idle';
+      pd.stateTimer = 0; ed.stateTimer = 0;
+      pd.punchCooldown = 0; ed.punchCooldown = 0;
+      pd.velX = 0; ed.velX = 0;
+      pd.hitFlash = 0; ed.hitFlash = 0;
+      playerMesh.position.set(-2.2, 0, 0);
+      enemyMesh.position.set(2.2, 0, 0);
       state.timeLeft = 99;
       state.round = 1;
       state.running = true;
       state.winner = null;
       state.shake = 0;
-      aiTimer = 1;
+      aiTimer = 1.2;
       document.getElementById('start-screen').classList.add('hidden');
       document.getElementById('end-screen').classList.add('hidden');
     }
@@ -897,10 +918,75 @@
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
 
-    // Prevent scrolling on mobile
+    // ---------- Resize ----------
+    function onResize() {
+      const w = canvasWrap.clientWidth;
+      const h = canvasWrap.clientHeight;
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+      renderer.setSize(w, h);
+    }
+    window.addEventListener('resize', onResize);
+    onResize();
+
     document.body.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
 
-    // Start loop
+    // ---------- Main Loop ----------
+    function updateFighterState(mesh, dt) {
+      const d = mesh.userData;
+      if (d.state === 'ko') return;
+      d.stateTimer -= dt;
+      d.punchCooldown = Math.max(0, d.punchCooldown - dt);
+      d.blockCooldown = Math.max(0, d.blockCooldown - dt);
+      d.dodgeCooldown = Math.max(0, d.dodgeCooldown - dt);
+      d.invuln = Math.max(0, d.invuln - dt);
+
+      if (d.stateTimer <= 0 && d.state !== 'idle' && d.state !== 'ko') {
+        d.state = 'idle';
+        d.punchType = null;
+      }
+    }
+
+    function gameLoop(timestamp) {
+      if (!state.lastTime) state.lastTime = timestamp;
+      const dt = Math.min((timestamp - state.lastTime) / 1000, 0.05);
+      state.lastTime = timestamp;
+
+      if (state.running) {
+        updateFighterState(playerMesh, dt);
+        updateFighterState(enemyMesh, dt);
+        animateFighter(playerMesh, dt);
+        animateFighter(enemyMesh, dt);
+        updateAI(dt);
+        checkHits();
+
+        state.timeLeft -= dt;
+        if (state.timeLeft <= 0) {
+          endFight(playerMesh.userData.hp >= enemyMesh.userData.hp ? 'player' : 'enemy');
+        }
+        if (playerMesh.userData.hp <= 0) endFight('enemy');
+        if (enemyMesh.userData.hp <= 0) endFight('player');
+      } else {
+        animateFighter(playerMesh, dt);
+        animateFighter(enemyMesh, dt);
+      }
+
+      // Camera shake
+      if (state.shake > 0) {
+        camera.position.x = (Math.random() - 0.5) * state.shake * 2.2;
+        camera.position.y = 4.2 + (Math.random() - 0.5) * state.shake;
+        state.shake *= 0.88;
+      } else {
+        camera.position.x *= 0.9;
+        camera.position.y += (4.2 - camera.position.y) * 0.1;
+      }
+      camera.lookAt(0, 1.3, 0);
+
+      updateUI();
+      renderer.render(scene, camera);
+      requestAnimationFrame(gameLoop);
+    }
+
     requestAnimationFrame(gameLoop);
   </script>
 </body>

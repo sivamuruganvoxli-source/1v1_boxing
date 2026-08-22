@@ -3,672 +3,769 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🥊 1v1 Boxing · 100 Levels</title>
+  <title>🥊 BOXING ARENA 100</title>
   <style>
-    * {
-      box-sizing: border-box;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-    }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      background: linear-gradient(145deg, #0b1a2e 0%, #1a2f44 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-      touch-action: manipulation;
-      padding: 12px;
-    }
-    .game-wrapper {
-      background: #1e3b4f;
-      padding: 18px 18px 24px;
-      border-radius: 56px 56px 32px 32px;
-      box-shadow: 0 20px 30px rgba(0,0,0,0.6), inset 0 2px 4px rgba(255,255,255,0.08);
-      max-width: 500px;
-      width: 100%;
-      transition: all 0.2s;
-    }
-    .canvas-container {
-      background: #0f212f;
-      border-radius: 40px 40px 24px 24px;
-      padding: 10px;
-      box-shadow: inset 0 8px 12px rgba(0,0,0,0.5);
-      touch-action: none;
-    }
-    canvas {
-      display: block;
-      width: 100%;
-      height: auto;
-      aspect-ratio: 400 / 480;
-      background: radial-gradient(circle at 20% 30%, #3a6b85, #1d3e52);
-      border-radius: 32px;
-      box-shadow: 0 0 0 2px #3f6b80, 0 0 0 4px #1c3342;
-      touch-action: none;
-      cursor: pointer;
-      margin: 0 auto;
-    }
-    .info-panel {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 12px 6px 12px;
-      color: #edf4f7;
-      text-shadow: 0 2px 3px #0a141e;
-      font-weight: 600;
-      flex-wrap: wrap;
-      gap: 8px 12px;
-    }
-    .level-box {
-      background: #132a38;
-      padding: 8px 20px;
-      border-radius: 60px;
-      box-shadow: inset 0 3px 6px #0b1c26, 0 4px 6px rgba(0,0,0,0.5);
-      font-size: 1.4rem;
-      letter-spacing: 1px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .level-box span {
-      background: #f5c542;
-      color: #1d2f3b;
-      padding: 0 14px;
-      border-radius: 40px;
-      font-weight: 800;
-      font-size: 1.9rem;
-      line-height: 1.4;
-      min-width: 48px;
-      text-align: center;
-      box-shadow: inset 0 -2px 0 #a07d2c;
-    }
-    .status-badge {
-      background: #1e3d4e;
-      padding: 8px 18px;
-      border-radius: 60px;
-      font-size: 1.2rem;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      box-shadow: inset 0 2px 5px #0e202b;
-      border-bottom: 2px solid #3b6a7a;
-    }
-    .status-badge .emoji {
-      font-size: 1.7rem;
-      line-height: 1;
-    }
-    .reset-btn {
-      background: #b13e3e;
-      border: none;
-      color: white;
-      font-weight: 700;
-      font-size: 1.1rem;
-      padding: 8px 20px;
-      border-radius: 40px;
-      box-shadow: 0 6px 0 #681f1f, 0 4px 12px black;
-      transition: 0.08s linear;
-      touch-action: manipulation;
-      cursor: pointer;
-      letter-spacing: 0.5px;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      border: 1px solid #d97a7a;
-    }
-    .reset-btn:active {
-      transform: translateY(5px);
-      box-shadow: 0 1px 0 #681f1f;
-    }
-    .controls {
-      display: flex;
-      justify-content: center;
-      gap: 18px;
-      margin-top: 12px;
-      padding: 0 6px;
-    }
-    .punch-btn {
-      background: #d93f3f;
-      border: none;
-      border-radius: 80px;
-      padding: 14px 30px;
-      font-weight: 800;
-      font-size: 1.5rem;
-      color: white;
-      text-shadow: 0 2px 0 #691f1f;
-      box-shadow: 0 9px 0 #6f2424, 0 6px 16px rgba(0,0,0,0.5);
-      transition: 0.06s linear;
-      touch-action: manipulation;
-      cursor: pointer;
-      flex: 1;
-      max-width: 180px;
-      border: 1px solid #f06a6a;
-      letter-spacing: 2px;
-    }
-    .punch-btn:active {
-      transform: translateY(7px);
-      box-shadow: 0 2px 0 #6f2424;
-    }
-    .punch-btn:disabled {
-      opacity: 0.6;
-      transform: translateY(5px);
-      box-shadow: 0 4px 0 #6f2424;
-      pointer-events: none;
-    }
-    .footer-note {
-      text-align: center;
-      color: #7b9eb0;
-      font-size: 0.75rem;
-      margin-top: 14px;
-      letter-spacing: 0.3px;
-      opacity: 0.8;
-    }
-    @media (max-width: 460px) {
-      .game-wrapper { padding: 10px; }
-      .level-box { font-size: 1.1rem; padding: 4px 14px; }
-      .level-box span { font-size: 1.6rem; min-width: 40px; }
-      .status-badge { font-size: 1rem; padding: 4px 12px; }
-      .punch-btn { font-size: 1.3rem; padding: 16px 12px; }
-      .reset-btn { font-size: 0.9rem; padding: 6px 14px; }
-    }
+    * { box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; margin: 0; padding: 0; }
+    body { background: #0b0f1a; font-family: 'Segoe UI', system-ui, sans-serif; touch-action: none; overflow: hidden; height: 100vh; width: 100vw; display: flex; justify-content: center; align-items: center; }
+    #gameContainer { position: relative; width: 100%; height: 100%; max-width: 900px; max-height: 700px; background: #1a1f2e; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.8); overflow: hidden; touch-action: none; }
+    canvas { display: block; width: 100%; height: 100%; touch-action: none; background: #121824; }
+    #uiOverlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; }
+    .touch-btn { pointer-events: auto; position: absolute; border-radius: 50%; background: rgba(255,255,255,0.1); backdrop-filter: blur(6px); border: 2px solid rgba(255,255,255,0.3); color: white; font-weight: bold; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.5); transition: 0.06s; touch-action: none; }
+    .touch-btn:active { transform: scale(0.88); background: rgba(255,200,100,0.3); }
+    #btnBlock { bottom: 20px; left: 20px; width: 70px; height: 70px; font-size: 14px; background: rgba(30,80,180,0.5); border-color: #5a8fff; }
+    #btnDodge { bottom: 100px; left: 20px; width: 60px; height: 60px; font-size: 12px; background: rgba(200,180,30,0.4); border-color: #ffd966; }
+    #btnJab { bottom: 20px; right: 20px; width: 70px; height: 70px; font-size: 16px; background: rgba(200,50,50,0.5); border-color: #ff6b6b; }
+    #btnCross { bottom: 100px; right: 100px; width: 65px; height: 65px; font-size: 14px; background: rgba(200,100,30,0.5); border-color: #ff9f4a; }
+    #btnHook { bottom: 20px; right: 100px; width: 65px; height: 65px; font-size: 14px; background: rgba(170,40,170,0.5); border-color: #d96bff; }
+    #btnUppercut { bottom: 100px; right: 20px; width: 60px; height: 60px; font-size: 12px; background: rgba(40,180,120,0.5); border-color: #4ae0b0; }
+    #btnSpecial { bottom: 180px; right: 20px; width: 55px; height: 55px; font-size: 10px; background: rgba(200,200,40,0.4); border-color: #ffd93d; }
+    .menu-screen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(8,12,24,0.92); backdrop-filter: blur(10px); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white; pointer-events: auto; padding: 20px; z-index: 20; }
+    .menu-screen h1 { font-size: 3.2rem; margin-bottom: 4px; text-shadow: 0 0 30px #ffbb33; letter-spacing: 2px; }
+    .menu-screen .sub { font-size: 1.2rem; opacity: 0.8; margin-bottom: 20px; }
+    .menu-btn { background: #2a3448; border: none; color: white; padding: 14px 40px; margin: 6px; border-radius: 60px; font-size: 1.2rem; font-weight: 600; width: 220px; box-shadow: 0 6px 0 #0f1420; transition: 0.06s; pointer-events: auto; cursor: pointer; touch-action: manipulation; text-align: center; }
+    .menu-btn:active { transform: translateY(5px); box-shadow: 0 1px 0 #0f1420; }
+    .menu-btn.primary { background: #e85d3a; box-shadow: 0 6px 0 #8f3a22; }
+    .level-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; max-width: 400px; width: 100%; max-height: 300px; overflow-y: auto; padding: 10px; background: rgba(0,0,0,0.3); border-radius: 20px; }
+    .level-cell { background: #1f2a3a; border-radius: 12px; padding: 10px 0; text-align: center; color: #aaa; font-weight: bold; border: 2px solid #2f3a4a; transition: 0.1s; pointer-events: auto; cursor: pointer; touch-action: manipulation; }
+    .level-cell.unlocked { border-color: #4a8f6a; background: #1e3a2e; color: #b0ffb0; }
+    .level-cell.locked { opacity: 0.5; }
+    .level-cell.boss { border-color: #d4a040; background: #3a2e1a; color: #ffd966; }
+    .level-cell.current { border-color: #ffbb33; background: #4a3a1a; box-shadow: 0 0 20px #ffbb33; }
+    .back-btn { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.5); border: none; color: white; padding: 8px 16px; border-radius: 30px; font-size: 1rem; pointer-events: auto; cursor: pointer; }
+    .status-bar { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.6); padding: 4px 16px; border-radius: 40px; color: white; font-size: 0.9rem; display: flex; gap: 20px; backdrop-filter: blur(4px); z-index: 10; pointer-events: none; }
+    .hidden { display: none !important; }
+    @media (max-width: 600px) { .menu-screen h1 { font-size: 2.2rem; } .menu-btn { width: 180px; padding: 12px 20px; font-size: 1rem; } .touch-btn { width: 60px; height: 60px; font-size: 11px; } #btnCross { right: 80px; width: 55px; height: 55px; } #btnHook { right: 80px; } #btnUppercut { right: 20px; } #btnSpecial { right: 20px; bottom: 160px; width: 50px; height: 50px; } }
   </style>
 </head>
 <body>
-<div class="game-wrapper">
-  <div class="canvas-container">
-    <canvas id="boxingCanvas" width="400" height="480"></canvas>
-  </div>
-
-  <div class="info-panel">
-    <div class="level-box">
-      🥊 <span id="levelDisplay">1</span>
+<div id="gameContainer">
+  <canvas id="gameCanvas"></canvas>
+  <div id="uiOverlay">
+    <div class="status-bar" id="statusBar"><span id="levelDisplay">🥊 1</span><span id="scoreDisplay">🏆 0</span></div>
+    <!-- touch controls -->
+    <div class="touch-btn" id="btnBlock">🛡️</div>
+    <div class="touch-btn" id="btnDodge">💨</div>
+    <div class="touch-btn" id="btnJab">👊</div>
+    <div class="touch-btn" id="btnCross">✊</div>
+    <div class="touch-btn" id="btnHook">🤛</div>
+    <div class="touch-btn" id="btnUppercut">⬆️</div>
+    <div class="touch-btn" id="btnSpecial">⭐</div>
+    <!-- menus -->
+    <div class="menu-screen" id="mainMenu">
+      <h1>🥊 BOXING ARENA</h1>
+      <div class="sub">100 LEVELS</div>
+      <button class="menu-btn primary" id="playBtn">▶ FIGHT</button>
+      <button class="menu-btn" id="levelSelectBtn">📋 LEVELS</button>
+      <button class="menu-btn" id="upgradeBtn">⬆ UPGRADES</button>
+      <button class="menu-btn" id="achievementBtn">🏅 ACHIEVEMENTS</button>
+      <div style="margin-top:12px;font-size:0.9rem;opacity:0.7;">XP: <span id="menuXp">0</span>  🪙 <span id="menuCoins">0</span></div>
     </div>
-    <div class="status-badge" id="statusBadge">
-      <span class="emoji">👊</span> <span id="statusText">Ready</span>
+    <div class="menu-screen hidden" id="levelSelectMenu">
+      <button class="back-btn" id="backFromLevels">← BACK</button>
+      <h2 style="margin-bottom:10px;">LEVEL SELECT</h2>
+      <div class="level-grid" id="levelGrid"></div>
     </div>
-    <button class="reset-btn" id="resetBtn">⟳ Reset</button>
+    <div class="menu-screen hidden" id="upgradeMenu">
+      <button class="back-btn" id="backFromUpgrade">← BACK</button>
+      <h2>⬆ UPGRADES</h2>
+      <div id="upgradeList" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;max-width:400px;"></div>
+      <div style="margin-top:10px;color:#ffd966;">🪙 <span id="upgradeCoins">0</span></div>
+    </div>
+    <div class="menu-screen hidden" id="achievementMenu">
+      <button class="back-btn" id="backFromAchievement">← BACK</button>
+      <h2>🏅 ACHIEVEMENTS</h2>
+      <div id="achievementList" style="max-width:400px;text-align:left;font-size:0.9rem;max-height:300px;overflow-y:auto;"></div>
+    </div>
+    <div class="menu-screen hidden" id="pauseMenu">
+      <h2>⏸ PAUSED</h2>
+      <button class="menu-btn" id="resumeBtn">▶ RESUME</button>
+      <button class="menu-btn" id="restartBtn">🔄 RESTART LEVEL</button>
+      <button class="menu-btn" id="quitBtn">🚪 MAIN MENU</button>
+    </div>
+    <div class="menu-screen hidden" id="victoryScreen">
+      <h2 style="color:#4ae0b0;">🏆 VICTORY!</h2>
+      <div id="victoryStats"></div>
+      <button class="menu-btn primary" id="nextLevelBtn">➡ NEXT LEVEL</button>
+      <button class="menu-btn" id="victoryLevelSelectBtn">📋 LEVELS</button>
+      <button class="menu-btn" id="victoryMainBtn">🏠 MAIN</button>
+    </div>
+    <div class="menu-screen hidden" id="defeatScreen">
+      <h2 style="color:#ff6b6b;">💀 DEFEAT</h2>
+      <div id="defeatStats"></div>
+      <button class="menu-btn primary" id="retryBtn">🔄 RETRY</button>
+      <button class="menu-btn" id="defeatLevelSelectBtn">📋 LEVELS</button>
+      <button class="menu-btn" id="defeatMainBtn">🏠 MAIN</button>
+    </div>
+    <div class="menu-screen hidden" id="championScreen">
+      <h2 style="color:#ffd93d;">🏆 CHAMPION 🏆</h2>
+      <div style="font-size:2rem;">100 LEVELS COMPLETE</div>
+      <div style="font-size:1.2rem;">YOU DEFEATED THE UNDEFEATED</div>
+      <div id="championStats"></div>
+      <button class="menu-btn" id="championMainBtn">🏠 MAIN</button>
+    </div>
   </div>
-
-  <div class="controls">
-    <button class="punch-btn" id="punchBtn">👊 PUNCH</button>
-  </div>
-  <div class="footer-note">▼ tap punch or press SPACE · 1v1 · 100 levels</div>
 </div>
-
 <script>
-  (function() {
-    const canvas = document.getElementById('boxingCanvas');
-    const ctx = canvas.getContext('2d');
-    const levelSpan = document.getElementById('levelDisplay');
-    const statusText = document.getElementById('statusText');
-    const statusEmoji = document.querySelector('.status-badge .emoji');
-    const punchBtn = document.getElementById('punchBtn');
-    const resetBtn = document.getElementById('resetBtn');
+// ============================================================
+// BOXING ARENA 100 — Full Game
+// ============================================================
+(function() {
+  const canvas = document.getElementById('gameCanvas');
+  const ctx = canvas.getContext('2d');
+  let W, H;
 
-    // ----- GAME STATE (1v1) -----
-    const state = {
-      level: 1,
-      // ----- PLAYER (left) -----
-      player: {
-        x: 120,
-        y: 240,
-        radius: 32,
-        // punch state
-        isPunching: false,
-        punchTimer: 0,
-        punchCooldown: 0,
-        hitCount: 0,          // hits landed on opponent (need 3 to level up)
-        isHitStun: false,     // got hit by opponent
-        hitStunTimer: 0,
-      },
-      // ----- OPPONENT (right) -----
-      opponent: {
-        x: 270,
-        y: 220,
-        radius: 38,
-        speed: 1.8,
-        direction: 1,         // 1 = down, -1 = up
-        isPunching: false,    // opponent punch animation
-        punchTimer: 0,
-        isHitStun: false,
-        hitStunTimer: 0,
-      },
-      // ----- global -----
-      gameOver: false,
-      win: false,
-      animFrame: null,
+  function resize() {
+    const rect = document.getElementById('gameContainer').getBoundingClientRect();
+    canvas.width = rect.width * devicePixelRatio;
+    canvas.height = rect.height * devicePixelRatio;
+    canvas.style.width = rect.width + 'px';
+    canvas.style.height = rect.height + 'px';
+    W = canvas.width;
+    H = canvas.height;
+    ctx.scale(1,1);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  // ---- UTILITIES ----
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+  function randInt(a,b){ return Math.floor(rand(a,b+1)); }
+  function clamp(v,a,b){ return Math.max(a,Math.min(b,v)); }
+  function lerp(a,b,t){ return a+(b-a)*t; }
+
+  // ---- AUDIO (Web Audio) ----
+  let audioCtx = null;
+  function initAudio() { if(!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+  function playTone(freq, dur, type='sawtooth', vol=0.15) {
+    try { initAudio(); if(!audioCtx) return; const osc=audioCtx.createOscillator(); const gain=audioCtx.createGain(); osc.type=type; osc.frequency.value=freq; gain.gain.value=vol; gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+dur); osc.connect(gain); gain.connect(audioCtx.destination); osc.start(); osc.stop(audioCtx.currentTime+dur); } catch(e){}
+  }
+  function soundPunch(){ playTone(200,0.08,'square',0.1); }
+  function soundHit(){ playTone(800,0.1,'sawtooth',0.15); }
+  function soundBlock(){ playTone(300,0.06,'sine',0.08); }
+  function soundDodge(){ playTone(500,0.05,'sine',0.06); }
+  function soundBell(){ playTone(1200,0.2,'sine',0.12); }
+  function soundKO(){ playTone(150,0.6,'sawtooth',0.2); }
+  function soundVictory(){ playTone(880,0.15,'sine',0.1); setTimeout(()=>playTone(1100,0.2,'sine',0.1),150); }
+
+  // ---- STORAGE ----
+  const S = {
+    get(k,def){ const v=localStorage.getItem('ba_'+k); return v!==null?JSON.parse(v):def; },
+    set(k,v){ localStorage.setItem('ba_'+k,JSON.stringify(v)); }
+  };
+  function loadProgress() {
+    return {
+      maxLevel: S.get('maxLevel',1),
+      stars: S.get('stars',{}),
+      bestScores: S.get('bestScores',{}),
+      xp: S.get('xp',0),
+      coins: S.get('coins',0),
+      upgrades: S.get('upgrades',{power:0,speed:0,health:0,stamina:0,defense:0,recovery:0,critical:0}),
+      achievements: S.get('achievements',[]),
+      lastDaily: S.get('lastDaily',0),
+      dailyCount: S.get('dailyCount',0),
+      totalWins: S.get('totalWins',0),
+      totalKO: S.get('totalKO',0),
+      bestCombo: S.get('bestCombo',0),
     };
+  }
+  function saveProgress(p) {
+    S.set('maxLevel',p.maxLevel);
+    S.set('stars',p.stars);
+    S.set('bestScores',p.bestScores);
+    S.set('xp',p.xp);
+    S.set('coins',p.coins);
+    S.set('upgrades',p.upgrades);
+    S.set('achievements',p.achievements);
+    S.set('lastDaily',p.lastDaily);
+    S.set('dailyCount',p.dailyCount);
+    S.set('totalWins',p.totalWins);
+    S.set('totalKO',p.totalKO);
+    S.set('bestCombo',p.bestCombo);
+  }
 
-    // ----- CONSTANTS -----
-    const MAX_LEVEL = 100;
-    const BASE_SPEED = 1.8;
-    const PUNCH_DURATION = 12;
-    const PUNCH_COOLDOWN_MAX = 18;
-    const HIT_STUN_MAX = 18;        // frames stunned after hit
+  // ---- GAME STATE ----
+  let progress = loadProgress();
+  let currentLevel = 1;
+  let gameState = 'menu'; // menu, fight, paused, victory, defeat, champion
+  let frameId = null;
+  let deltaTime = 0;
+  let lastTime = 0;
 
-    // ----- HELPERS -----
-    function getLevelSpeed(level) {
-      return Math.min(BASE_SPEED + (level - 1) * 0.28, 7.0);
+  // ---- FIGHTERS ----
+  let player = { x:0,y:0,w:50,h:70, health:100, maxHealth:100, stamina:100, maxStamina:100, 
+    power:10, speed:1, defense:0, recovery:1, crit:0.05, combo:0, maxCombo:0, 
+    state:'idle', timer:0, stun:0, block:false, dodge:false, dodgeTimer:0,
+    attack:null, attackTimer:0, attackCooldown:0, knockDown:false, knockDownTimer:0, 
+    score:0, damageDealt:0, knockdowns:0 };
+  let opponent = { x:0,y:0,w:50,h:70, health:100, maxHealth:100, stamina:100, maxStamina:100,
+    power:10, speed:1, defense:0, reaction:0.5, comboChance:0.1, aggression:0.5,
+    state:'idle', timer:0, stun:0, block:false, dodge:false, attack:null, attackTimer:0,
+    knockDown:false, knockDownTimer:0, aiTimer:0, aiState:'idle', rage:false, 
+    name:'Rookie', type:'normal', boss:false, specialAttack:false };
+
+  // ---- LEVEL DATA ----
+  const OPPONENT_TYPES = [
+    'Rookie','Street Fighter','Fast Boxer','Heavy Boxer','Counter Puncher','Defensive Boxer',
+    'Aggressive Boxer','Technical Boxer','Power Puncher','Speed Demon','Veteran','Pro Boxer',
+    'Elite Boxer','Champion','Legendary Boxer'
+  ];
+  function generateLevel(level) {
+    const diff = 1 + (level-1) * 0.035;
+    const isBoss = level % 10 === 0;
+    const typeIdx = (level-1) % OPPONENT_TYPES.length;
+    const type = OPPONENT_TYPES[typeIdx];
+    const baseHealth = 80 + diff * 20 + (isBoss ? 60 : 0);
+    const basePower = 8 + diff * 4 + (isBoss ? 12 : 0);
+    const baseSpeed = 1 + diff * 0.5;
+    const baseDefense = 5 + diff * 2;
+    const baseReaction = 0.3 + diff * 0.05;
+    const baseCombo = 0.05 + diff * 0.02;
+    const baseAggression = 0.3 + diff * 0.04;
+    return {
+      level,
+      isBoss,
+      type,
+      name: isBoss ? (level===100?'THE UNDEFEATED':`Boss ${level/10}`) : type,
+      health: Math.min(Math.floor(baseHealth), 350),
+      power: Math.min(Math.floor(basePower), 45),
+      speed: Math.min(baseSpeed, 5.5),
+      defense: Math.min(Math.floor(baseDefense), 30),
+      reaction: Math.min(baseReaction, 0.9),
+      comboChance: Math.min(baseCombo, 0.4),
+      aggression: Math.min(baseAggression, 0.75),
+      stamina: Math.min(100 + diff * 10, 180),
+      special: isBoss ? true : false,
+      rage: isBoss ? true : false,
+    };
+  }
+
+  // ---- INIT FIGHT ----
+  function initFight(level) {
+    const data = generateLevel(level);
+    const pUp = progress.upgrades;
+    const pHealth = 100 + pUp.health * 4;
+    const pStamina = 100 + pUp.stamina * 3;
+    const pPower = 10 + pUp.power * 1.8;
+    const pSpeed = 1 + pUp.speed * 0.15;
+    const pDefense = pUp.defense * 1.2;
+    const pRecovery = 1 + pUp.recovery * 0.2;
+    const pCrit = 0.05 + pUp.critical * 0.015;
+
+    Object.assign(player, {
+      x: W*0.25, y: H*0.6, w:50, h:70,
+      health: pHealth, maxHealth: pHealth,
+      stamina: pStamina, maxStamina: pStamina,
+      power: pPower, speed: pSpeed, defense: pDefense, recovery: pRecovery, crit: pCrit,
+      combo:0, maxCombo:0, state:'idle', timer:0, stun:0, block:false, dodge:false, dodgeTimer:0,
+      attack:null, attackTimer:0, attackCooldown:0, knockDown:false, knockDownTimer:0,
+      score:0, damageDealt:0, knockdowns:0
+    });
+    const oHealth = data.health;
+    Object.assign(opponent, {
+      x: W*0.75, y: H*0.6, w:50, h:70,
+      health: oHealth, maxHealth: oHealth,
+      stamina: data.stamina, maxStamina: data.stamina,
+      power: data.power, speed: data.speed, defense: data.defense,
+      reaction: data.reaction, comboChance: data.comboChance, aggression: data.aggression,
+      state:'idle', timer:0, stun:0, block:false, dodge:false, attack:null, attackTimer:0,
+      knockDown:false, knockDownTimer:0, aiTimer:0, aiState:'idle', rage:false,
+      name: data.name, type: data.type, boss: data.isBoss, specialAttack:false
+    });
+    currentLevel = level;
+    gameState = 'fight';
+    document.getElementById('levelDisplay').textContent = `🥊 ${level}`;
+    document.getElementById('scoreDisplay').textContent = '🏆 0';
+    hideAllMenus();
+    soundBell();
+    // daily reward check
+    const now = Date.now();
+    if(now - progress.lastDaily > 86400000) {
+      const count = (progress.dailyCount || 0) % 7 + 1;
+      const reward = count * 50;
+      progress.coins += reward;
+      progress.lastDaily = now;
+      progress.dailyCount = count;
+      saveProgress(progress);
     }
+  }
 
-    function getOpponentRadius(level) {
-      return Math.min(38 + Math.floor(level / 20), 46);
-    }
-
-    // ----- RESET MATCH (keep level) -----
-    function resetMatch() {
-      const p = state.player;
-      const o = state.opponent;
-      p.y = 240;
-      p.isPunching = false;
-      p.punchTimer = 0;
-      p.punchCooldown = 0;
-      p.hitCount = 0;
-      p.isHitStun = false;
-      p.hitStunTimer = 0;
-
-      o.y = 220;
-      o.direction = 1;
-      o.isPunching = false;
-      o.punchTimer = 0;
-      o.isHitStun = false;
-      o.hitStunTimer = 0;
-      o.speed = getLevelSpeed(state.level);
-      o.radius = getOpponentRadius(state.level);
-
-      state.gameOver = false;
-      state.win = false;
-      punchBtn.disabled = false;
-      updateStatusText('Fight!', '🥊');
-      levelSpan.textContent = state.level;
-    }
-
-    // ----- NEXT LEVEL -----
-    function goToNextLevel() {
-      if (state.level >= MAX_LEVEL) {
-        state.gameOver = true;
-        state.win = true;
-        updateStatusText('🏆 CHAMPION!', '🏆');
-        punchBtn.disabled = true;
-        return;
+  // ---- COMBAT ----
+  function playerAttack(type) {
+    if(gameState!=='fight' || player.knockDown || player.stun>0 || player.attackTimer>0 || player.attackCooldown>0) return;
+    const cost = {jab:8, cross:12, hook:16, uppercut:20, heavy:28, special:35};
+    const dmg = {jab:6, cross:10, hook:14, uppercut:18, heavy:25, special:32};
+    const spd = {jab:0.3, cross:0.5, hook:0.6, uppercut:0.7, heavy:0.9, special:0.8};
+    const c = cost[type] || 10;
+    if(player.stamina < c) return;
+    player.stamina -= c;
+    const base = (dmg[type]||8) + player.power * 0.5;
+    const crit = Math.random() < player.crit ? 1.6 : 1;
+    const dmgDealt = Math.floor(base * crit * (0.9+Math.random()*0.2));
+    player.attack = type;
+    player.attackTimer = spd[type]||0.5;
+    player.attackCooldown = 0.2;
+    soundPunch();
+    // check hit
+    const dx = opponent.x - player.x;
+    const dy = opponent.y - player.y;
+    const dist = Math.sqrt(dx*dx+dy*dy);
+    if(dist < 80 && !opponent.knockDown && opponent.stun<=0) {
+      let blocked = opponent.block && Math.random()<0.6;
+      if(blocked) { soundBlock(); opponent.stun=0.1; return; }
+      let def = opponent.defense * 0.3;
+      let actual = Math.max(1, dmgDealt - def);
+      if(opponent.boss && opponent.health < opponent.maxHealth*0.5 && opponent.rage) {
+        actual *= 0.8; // rage defense
       }
-      state.level += 1;
-      const o = state.opponent;
-      o.speed = getLevelSpeed(state.level);
-      o.radius = getOpponentRadius(state.level);
-      resetMatch();
-      levelSpan.textContent = state.level;
-      updateStatusText(`Level ${state.level}`, '⚡');
-    }
-
-    // ----- PLAYER PUNCH -----
-    function performPunch() {
-      const p = state.player;
-      if (state.gameOver) return;
-      if (p.isPunching) return;
-      if (p.punchCooldown > 0) return;
-      if (p.isHitStun) return;
-
-      // initiate punch
-      p.isPunching = true;
-      p.punchTimer = PUNCH_DURATION;
-      p.punchCooldown = PUNCH_COOLDOWN_MAX;
-      punchBtn.disabled = true;
-
-      // collision check vs opponent
-      const o = state.opponent;
-      const dx = o.x - p.x;
-      const dy = o.y - p.y;
-      const dist = Math.sqrt(dx*dx + dy*dy);
-      const threshold = p.radius + o.radius - 6;
-
-      if (dist < threshold && !o.isHitStun) {
-        // HIT LANDED!
-        p.hitCount++;
-        o.isHitStun = true;
-        o.hitStunTimer = HIT_STUN_MAX;
-        // push opponent
-        o.y += 18 * o.direction;
-
-        updateStatusText(`👊 Hit ${p.hitCount}/3`, '💥');
-
-        if (p.hitCount >= 3) {
-          goToNextLevel();
-          return;
-        }
-        // increase opponent speed slightly on hit
-        o.speed = Math.min(o.speed + 0.25, 7.5);
-      } else {
-        // MISS
-        updateStatusText('Miss!', '😤');
-        // if opponent not in hitstun, they may counter-punch? (AI will handle)
+      opponent.health -= actual;
+      opponent.stun = 0.4;
+      player.damageDealt += actual;
+      soundHit();
+      // combo
+      player.combo++;
+      if(player.combo > player.maxCombo) player.maxCombo = player.combo;
+      // check knockdown
+      if(opponent.health <= 0) {
+        opponent.health = 0;
+        opponent.knockDown = true;
+        opponent.knockDownTimer = 3;
+        player.knockdowns++;
+        soundKO();
       }
+      // update score
+      const comboBonus = Math.floor(player.combo * 2);
+      player.score += Math.floor(actual * 2) + comboBonus;
+      document.getElementById('scoreDisplay').textContent = `🏆 ${player.score}`;
+      // achievements
+      checkAchievements();
+    } else {
+      // miss
+      player.combo = 0;
     }
+  }
 
-    // ----- OPPONENT AI (1v1) -----
-    function updateOpponentAI() {
-      const o = state.opponent;
-      const p = state.player;
-      if (state.gameOver) return;
-      if (o.isHitStun) return;
+  function playerBlock() { if(!player.knockDown && player.stun<=0) player.block = true; }
+  function playerDodge() { if(!player.knockDown && player.stun<=0 && player.dodgeTimer<=0) { player.dodge=true; player.dodgeTimer=0.3; soundDodge(); } }
 
-      // movement: seek player's y with some randomness
-      const targetY = p.y + (Math.random() - 0.5) * 40;
-      const diff = targetY - o.y;
-      const moveSpeed = o.speed * 0.7;
-
-      if (Math.abs(diff) > 15) {
-        o.y += Math.sign(diff) * Math.min(Math.abs(diff) * 0.12, moveSpeed);
-      } else {
-        // random drift
-        o.y += (Math.random() - 0.5) * 0.8;
-      }
-
-      // boundaries
-      o.y = Math.max(70, Math.min(400, o.y));
-
-      // opponent punch AI: randomly punch if close enough and not punching
-      if (!o.isPunching && !p.isHitStun) {
-        const dx = o.x - p.x;
-        const dy = o.y - p.y;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        const threshold = o.radius + p.radius + 10;
-
-        // punch chance increases with level and proximity
-        const punchChance = Math.min(0.018 + (state.level * 0.0015), 0.09);
-        if (dist < threshold && Math.random() < punchChance) {
-          // opponent punches!
-          o.isPunching = true;
-          o.punchTimer = PUNCH_DURATION;
-
-          // check if it hits player
-          if (dist < o.radius + p.radius - 4 && !p.isHitStun) {
-            // opponent lands a hit!
-            p.isHitStun = true;
-            p.hitStunTimer = HIT_STUN_MAX;
-            updateStatusText('💀 Ouch!', '💢');
-            // if player gets hit, reset hit count? (punishment)
-            p.hitCount = Math.max(0, p.hitCount - 1);
-            if (p.hitCount < 0) p.hitCount = 0;
-            // push player
-            p.y += 15 * (p.y < o.y ? -1 : 1);
-            // if player gets hit too many times? we'll make it a loss if hit while already low
-            // but we want 1v1 feel: 3 hits to win, but if opponent lands 3 hits you lose?
-            // we track a "health" concept: each hit reduces player's progress
-            // we'll use a simple: if opponent hits you 3 times (total) you lose.
-            // we'll track opponentHits
-            if (!state.opponentHits) state.opponentHits = 0;
-            state.opponentHits = (state.opponentHits || 0) + 1;
-            if (state.opponentHits >= 3) {
-              state.gameOver = true;
-              state.win = false;
-              updateStatusText('💀 KO!', '💀');
-              punchBtn.disabled = true;
+  // ---- AI ----
+  function updateAI(dt) {
+    if(opponent.knockDown || opponent.stun>0) return;
+    opponent.aiTimer -= dt;
+    if(opponent.aiTimer > 0) return;
+    opponent.aiTimer = 0.2 + Math.random()*0.4;
+    const dist = Math.abs(opponent.x - player.x);
+    const action = Math.random();
+    const aggro = opponent.aggression + (opponent.boss && opponent.health<opponent.maxHealth*0.5 ? 0.2 : 0);
+    if(dist < 90) {
+      if(action < aggro*0.6) {
+        // attack
+        const types = ['jab','cross','hook','uppercut'];
+        let type = types[randInt(0,3)];
+        if(opponent.boss && Math.random()<0.2) type = 'heavy';
+        if(opponent.boss && opponent.health<opponent.maxHealth*0.3 && Math.random()<0.3) type = 'special';
+        const cost = {jab:8, cross:12, hook:16, uppercut:20, heavy:28, special:35};
+        if(opponent.stamina > cost[type]) {
+          opponent.stamina -= cost[type];
+          opponent.attack = type;
+          opponent.attackTimer = 0.5 + Math.random()*0.3;
+          const dmg = {jab:6, cross:10, hook:14, uppercut:18, heavy:25, special:32};
+          const base = dmg[type] + opponent.power * 0.4;
+          const hit = Math.random() < 0.7 + opponent.reaction*0.2;
+          if(hit) {
+            const dx = player.x - opponent.x;
+            const dy = player.y - opponent.y;
+            if(Math.sqrt(dx*dx+dy*dy) < 80 && !player.block && !player.dodge && player.stun<=0) {
+              let actual = Math.floor(base * (0.8+Math.random()*0.4) - player.defense*0.2);
+              actual = Math.max(1, actual);
+              player.health -= actual;
+              player.stun = 0.3;
+              player.combo = 0;
+              soundHit();
+              if(player.health <= 0) {
+                player.health = 0;
+                player.knockDown = true;
+                player.knockDownTimer = 3;
+                soundKO();
+              }
+            } else if(player.dodge) {
+              // perfect dodge bonus
+              player.score += 20;
             }
           }
         }
+      } else if(action < aggro*0.8) {
+        opponent.block = true;
+      } else {
+        // dodge
+        opponent.dodge = true;
+        setTimeout(()=>opponent.dodge=false, 200);
       }
+    } else {
+      // approach
+      opponent.x += (player.x - opponent.x) * 0.02 * opponent.speed;
+    }
+    // stamina regen
+    opponent.stamina = Math.min(opponent.maxStamina, opponent.stamina + 2*dt);
+  }
 
-      // opponent punch timer
-      if (o.isPunching) {
-        o.punchTimer--;
-        if (o.punchTimer <= 0) {
-          o.isPunching = false;
-        }
+  // ---- UPDATE ----
+  function update(dt) {
+    if(gameState !== 'fight') return;
+    // player regen
+    player.stamina = Math.min(player.maxStamina, player.stamina + 5*dt*player.recovery);
+    if(player.attackCooldown > 0) player.attackCooldown -= dt;
+    if(player.attackTimer > 0) { player.attackTimer -= dt; if(player.attackTimer<=0) player.attack=null; }
+    if(player.stun > 0) player.stun -= dt;
+    if(player.dodgeTimer > 0) player.dodgeTimer -= dt; else player.dodge=false;
+    if(player.block && player.stun>0) player.block=false;
+    // player knockdown
+    if(player.knockDown) {
+      player.knockDownTimer -= dt;
+      if(player.knockDownTimer <= 0) {
+        player.knockDown = false;
+        player.health = player.maxHealth * 0.3;
+        player.stun = 0.5;
       }
     }
-
-    // ----- UPDATE LOOP -----
-    function updateGame() {
-      if (state.gameOver) return;
-
-      const p = state.player;
-      const o = state.opponent;
-
-      // player cooldowns
-      if (p.punchCooldown > 0) {
-        p.punchCooldown--;
-        if (p.punchCooldown === 0) {
-          if (!p.isPunching) punchBtn.disabled = false;
-        }
+    // opponent regen
+    opponent.stamina = Math.min(opponent.maxStamina, opponent.stamina + 2*dt);
+    if(opponent.attackTimer > 0) { opponent.attackTimer -= dt; if(opponent.attackTimer<=0) opponent.attack=null; }
+    if(opponent.stun > 0) opponent.stun -= dt;
+    if(opponent.knockDown) {
+      opponent.knockDownTimer -= dt;
+      if(opponent.knockDownTimer <= 0) {
+        opponent.knockDown = false;
+        opponent.health = opponent.maxHealth * 0.25;
+        opponent.stun = 0.5;
       }
-      if (p.isPunching) {
-        p.punchTimer--;
-        if (p.punchTimer <= 0) {
-          p.isPunching = false;
-          if (p.punchCooldown === 0) punchBtn.disabled = false;
-        }
-      }
-      if (p.isHitStun) {
-        p.hitStunTimer--;
-        if (p.hitStunTimer <= 0) p.isHitStun = false;
-      }
-
-      // opponent stun
-      if (o.isHitStun) {
-        o.hitStunTimer--;
-        if (o.hitStunTimer <= 0) {
-          o.isHitStun = false;
-        }
-      }
-
-      // opponent AI
-      updateOpponentAI();
-
-      // boundary for player (optional)
-      p.y = Math.max(70, Math.min(400, p.y));
     }
+    // AI
+    if(!opponent.knockDown) updateAI(dt);
+    // check win/lose
+    if(player.knockDown && player.health<=0) {
+      // defeat
+      gameOver(false);
+    } else if(opponent.knockDown && opponent.health<=0) {
+      gameOver(true);
+    }
+    // update UI
+    document.getElementById('scoreDisplay').textContent = `🏆 ${player.score}`;
+  }
 
-    // ----- DRAWING (1v1) -----
-    function draw() {
-      ctx.clearRect(0, 0, 400, 480);
+  // ---- GAME OVER ----
+  function gameOver(win) {
+    if(gameState !== 'fight') return;
+    gameState = win ? 'victory' : 'defeat';
+    if(win) {
+      soundVictory();
+      const stars = getStars();
+      const level = currentLevel;
+      if(!progress.stars[level] || stars > progress.stars[level]) progress.stars[level] = stars;
+      if(!progress.bestScores[level] || player.score > progress.bestScores[level]) progress.bestScores[level] = player.score;
+      progress.xp += 100 + (currentLevel%10===0?400:0);
+      progress.coins += 50 + (currentLevel%10===0?200:0);
+      progress.totalWins++;
+      if(player.knockdowns>0) progress.totalKO++;
+      if(player.maxCombo > progress.bestCombo) progress.bestCombo = player.maxCombo;
+      if(currentLevel >= progress.maxLevel && currentLevel < 100) progress.maxLevel = currentLevel+1;
+      saveProgress(progress);
+      showVictory(win);
+    } else {
+      soundKO();
+      showDefeat();
+    }
+  }
 
-      const p = state.player;
-      const o = state.opponent;
+  function getStars() {
+    const healthPct = player.health / player.maxHealth;
+    let stars = 1;
+    if(healthPct > 0.4) stars = 2;
+    if(healthPct > 0.7 && player.knockdowns===0 && player.maxCombo>=5) stars = 3;
+    return stars;
+  }
 
-      // ---- shadows ----
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 14;
-
-      // ---- PLAYER (left) ----
+  // ---- RENDER ----
+  function draw() {
+    ctx.clearRect(0,0,W,H);
+    // ring
+    ctx.fillStyle = '#1a2a3a';
+    ctx.fillRect(0,0,W,H);
+    ctx.fillStyle = '#2a4a5a';
+    ctx.beginPath();
+    ctx.ellipse(W/2, H/2+20, W*0.35, H*0.3, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.strokeStyle = '#6a8a9a';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(W*0.12, H*0.08, W*0.76, H*0.78);
+    // ropes
+    for(let i=0;i<3;i++) {
       ctx.beginPath();
-      ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
-      ctx.fillStyle = '#2d7eb0';
-      ctx.shadowBlur = 18;
-      ctx.fill();
-      ctx.strokeStyle = '#b4d9f0';
-      ctx.lineWidth = 3;
+      ctx.moveTo(W*0.12, H*0.08 + i*H*0.26);
+      ctx.lineTo(W*0.88, H*0.08 + i*H*0.26);
+      ctx.strokeStyle = '#8a5a3a';
+      ctx.lineWidth = 2;
       ctx.stroke();
+    }
+    // fighters
+    drawFighter(player, '#3a7abd', '#2a5a9a');
+    drawFighter(opponent, '#bd3a3a', '#8a2a2a');
+    // health bars
+    drawHealthBar(W*0.1, H*0.04, W*0.35, 12, player.health, player.maxHealth, '#4ae0b0');
+    drawHealthBar(W*0.55, H*0.04, W*0.35, 12, opponent.health, opponent.maxHealth, '#ff6b6b');
+    // stamina
+    drawHealthBar(W*0.1, H*0.02, W*0.35, 6, player.stamina, player.maxStamina, '#ffd93d');
+    drawHealthBar(W*0.55, H*0.02, W*0.35, 6, opponent.stamina, opponent.maxStamina, '#ffd93d');
+    // combo
+    if(player.combo > 1) {
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 24px sans-serif';
+      ctx.fillText(`${player.combo} COMBO!`, W*0.3, H*0.14);
+    }
+    // opponent name
+    ctx.fillStyle = '#ddd';
+    ctx.font = '16px sans-serif';
+    ctx.fillText(opponent.name, W*0.65, H*0.12);
+    if(opponent.boss) {
+      ctx.fillStyle = '#ffd93d';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.fillText('👑 BOSS', W*0.65, H*0.08);
+    }
+  }
 
-      // player face
+  function drawFighter(f, color, dark) {
+    const x = f.x, y = f.y, w=50, h=70;
+    // body
+    ctx.fillStyle = color;
+    ctx.shadowColor = 'rgba(0,0,0,0.4)';
+    ctx.shadowBlur = 20;
+    ctx.beginPath();
+    ctx.ellipse(x, y, w/2, h/2, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.shadowBlur = 0;
+    // head
+    ctx.fillStyle = '#e8c8a0';
+    ctx.beginPath();
+    ctx.arc(x, y-h*0.3, 18, 0, Math.PI*2);
+    ctx.fill();
+    // gloves
+    ctx.fillStyle = dark;
+    ctx.beginPath();
+    ctx.arc(x-18, y+8, 12, 0, Math.PI*2);
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(x+18, y+8, 12, 0, Math.PI*2);
+    ctx.fill();
+    // shorts
+    ctx.fillStyle = dark;
+    ctx.fillRect(x-18, y+10, 36, 20);
+    // legs
+    ctx.fillStyle = dark;
+    ctx.fillRect(x-14, y+30, 10, 16);
+    ctx.fillRect(x+4, y+30, 10, 16);
+    // attack effect
+    if(f.attack) {
+      ctx.fillStyle = 'rgba(255,200,80,0.6)';
       ctx.beginPath();
-      ctx.arc(p.x-8, p.y-6, 6, 0, Math.PI*2);
-      ctx.fillStyle = '#f5e6d3';
+      ctx.arc(x + (f===player?40:-40), y-4, 20, 0, Math.PI*2);
       ctx.fill();
+    }
+    if(f.block) {
+      ctx.strokeStyle = '#6af';
+      ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.arc(p.x+8, p.y-6, 6, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = '#1f1f2e';
-      ctx.beginPath();
-      ctx.arc(p.x-10, p.y-10, 3, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(p.x+6, p.y-10, 3, 0, Math.PI*2);
-      ctx.fill();
-
-      // player punch effect
-      if (p.isPunching) {
-        ctx.shadowBlur = 30;
-        ctx.beginPath();
-        ctx.arc(p.x + 40, p.y - 2, 18, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255, 220, 80, 0.6)';
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255, 180, 40, 0.8)';
-        ctx.beginPath();
-        ctx.arc(p.x + 48, p.y - 4, 12, 0, Math.PI*2);
-        ctx.fill();
-      }
-
-      // ---- OPPONENT (right) ----
-      ctx.shadowBlur = 16;
-      ctx.beginPath();
-      ctx.arc(o.x, o.y, o.radius, 0, Math.PI*2);
-      ctx.fillStyle = '#b83b3b';
-      ctx.fill();
-      ctx.strokeStyle = '#e07a7a';
-      ctx.lineWidth = 3;
+      ctx.arc(x, y-8, 30, 0, Math.PI*2);
       ctx.stroke();
-
-      // opponent face
+    }
+    if(f.dodge) {
+      ctx.fillStyle = 'rgba(200,200,255,0.2)';
       ctx.beginPath();
-      ctx.arc(o.x-8, o.y-6, 7, 0, Math.PI*2);
-      ctx.fillStyle = '#d9b8a0';
+      ctx.arc(x, y, 40, 0, Math.PI*2);
       ctx.fill();
-      ctx.beginPath();
-      ctx.arc(o.x+8, o.y-6, 7, 0, Math.PI*2);
-      ctx.fill();
-      ctx.fillStyle = '#1f1f2e';
-      ctx.beginPath();
-      ctx.arc(o.x-10, o.y-10, 3, 0, Math.PI*2);
-      ctx.fill();
-      ctx.beginPath();
-      ctx.arc(o.x+6, o.y-10, 3, 0, Math.PI*2);
-      ctx.fill();
-
-      // opponent punch effect
-      if (o.isPunching) {
-        ctx.shadowBlur = 30;
-        ctx.beginPath();
-        ctx.arc(o.x - 40, o.y - 2, 18, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255, 100, 70, 0.6)';
-        ctx.fill();
-        ctx.fillStyle = 'rgba(255, 80, 40, 0.8)';
-        ctx.beginPath();
-        ctx.arc(o.x - 48, o.y - 4, 12, 0, Math.PI*2);
-        ctx.fill();
-      }
-
-      // hit stun indicators
-      if (p.isHitStun) {
-        ctx.shadowBlur = 25;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.radius+6, 0, Math.PI*2);
-        ctx.strokeStyle = '#ff6644';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-      }
-      if (o.isHitStun) {
-        ctx.shadowBlur = 25;
-        ctx.beginPath();
-        ctx.arc(o.x, o.y, o.radius+6, 0, Math.PI*2);
-        ctx.strokeStyle = '#ffdd44';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-      }
-
-      // ---- UI on canvas ----
-      ctx.shadowBlur = 10;
-      ctx.font = 'bold 17px monospace';
-      ctx.fillStyle = '#dbeef5';
-      ctx.textAlign = 'left';
-      ctx.fillText(`Lv.${state.level}`, 14, 38);
-      ctx.fillStyle = '#b3d6e0';
-      const hits = state.player.hitCount;
-      ctx.fillText(`👊 ${hits}/3`, 14, 66);
-      // opponent hits
-      const oppHits = state.opponentHits || 0;
-      ctx.textAlign = 'right';
-      ctx.fillStyle = '#f5b0b0';
-      ctx.fillText(`💢 ${oppHits}/3`, 386, 66);
-
-      // game over
-      if (state.gameOver) {
-        ctx.shadowBlur = 20;
-        ctx.font = 'bold 38px "Segoe UI", system-ui';
-        ctx.fillStyle = state.win ? '#f5d742' : '#e05858';
-        ctx.shadowColor = 'black';
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(state.win ? '🏆 WINNER' : '💀 LOST', 200, 80);
-        ctx.font = 'bold 22px sans-serif';
-        ctx.fillStyle = '#ebf5f0';
-        ctx.fillText(state.win ? 'Champion!' : 'Press Reset', 200, 140);
-      }
-
-      ctx.shadowBlur = 0;
     }
+  }
 
-    // ----- GAME LOOP -----
-    function gameLoop() {
-      updateGame();
-      draw();
-      state.animFrame = requestAnimationFrame(gameLoop);
+  function drawHealthBar(x,y,w,h,val,max,col) {
+    const pct = clamp(val/max,0,1);
+    ctx.fillStyle = 'rgba(0,0,0,0.6)';
+    ctx.fillRect(x,y,w,h);
+    ctx.fillStyle = col;
+    ctx.fillRect(x+2, y+2, (w-4)*pct, h-4);
+    ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x,y,w,h);
+  }
+
+  // ---- UI ----
+  function hideAllMenus() {
+    document.querySelectorAll('.menu-screen').forEach(el=>el.classList.add('hidden'));
+  }
+  function showMenu(id) {
+    hideAllMenus();
+    document.getElementById(id).classList.remove('hidden');
+  }
+
+  function showVictory(win) {
+    showMenu('victoryScreen');
+    const stats = document.getElementById('victoryStats');
+    stats.innerHTML = `
+      <div>LEVEL ${currentLevel} COMPLETE</div>
+      <div>⭐ ${'⭐'.repeat(getStars())}</div>
+      <div>SCORE: ${player.score}  |  COMBO: ${player.maxCombo}</div>
+      <div>KNOCKDOWNS: ${player.knockdowns}</div>
+      <div>+${100+(currentLevel%10===0?400:0)} XP  🪙 +${50+(currentLevel%10===0?200:0)}</div>
+    `;
+  }
+  function showDefeat() {
+    showMenu('defeatScreen');
+    document.getElementById('defeatStats').innerHTML = `
+      <div>LEVEL ${currentLevel}</div>
+      <div>SCORE: ${player.score}  |  COMBO: ${player.maxCombo}</div>
+      <div>DAMAGE: ${player.damageDealt}</div>
+    `;
+  }
+  function updateMenus() {
+    document.getElementById('menuXp').textContent = progress.xp;
+    document.getElementById('menuCoins').textContent = progress.coins;
+    document.getElementById('upgradeCoins').textContent = progress.coins;
+    // level grid
+    const grid = document.getElementById('levelGrid');
+    grid.innerHTML = '';
+    for(let i=1;i<=100;i++) {
+      const cell = document.createElement('div');
+      cell.className = 'level-cell';
+      const unlocked = i <= progress.maxLevel;
+      if(unlocked) cell.classList.add('unlocked');
+      else cell.classList.add('locked');
+      if(i%10===0) cell.classList.add('boss');
+      if(i===currentLevel) cell.classList.add('current');
+      cell.textContent = i;
+      if(unlocked) {
+        const stars = progress.stars[i]||0;
+        cell.textContent = i + (stars>0?' ⭐'.repeat(stars):'');
+      } else {
+        cell.textContent = i + ' 🔒';
+      }
+      cell.addEventListener('click', ()=>{
+        if(i <= progress.maxLevel) {
+          currentLevel = i;
+          initFight(i);
+        }
+      });
+      grid.appendChild(cell);
     }
-
-    // ----- FULL RESET -----
-    function fullReset() {
-      state.level = 1;
-      state.opponentHits = 0;
-      const o = state.opponent;
-      o.speed = getLevelSpeed(1);
-      o.radius = getOpponentRadius(1);
-      resetMatch();
-      levelSpan.textContent = 1;
-      updateStatusText('Reset', '🔄');
-      punchBtn.disabled = false;
-      state.gameOver = false;
-      state.win = false;
-      state.opponentHits = 0;
-    }
-
-    // ----- UI UPDATE -----
-    function updateStatusText(text, emoji) {
-      statusText.textContent = text;
-      statusEmoji.textContent = emoji || '👊';
-    }
-
-    // ----- EVENT LISTENERS -----
-    punchBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      performPunch();
+    // upgrades
+    const upList = document.getElementById('upgradeList');
+    upList.innerHTML = '';
+    const upKeys = ['power','speed','health','stamina','defense','recovery','critical'];
+    const upNames = ['Power','Speed','Health','Stamina','Defense','Recovery','Critical'];
+    upKeys.forEach((k,idx)=>{
+      const div = document.createElement('div');
+      div.style.background='#1f2a3a'; div.style.padding='8px 12px'; div.style.borderRadius='12px';
+      div.innerHTML = `${upNames[idx]} Lv.${progress.upgrades[k] || 0} <button class="upgrade-btn" data-key="${k}" style="background:#e85d3a;border:none;color:#fff;padding:2px 12px;border-radius:20px;">⬆ ${50 + (progress.upgrades[k]||0)*30}🪙</button>`;
+      div.querySelector('.upgrade-btn').addEventListener('click', (e)=>{
+        const key = e.target.dataset.key;
+        const cost = 50 + (progress.upgrades[key]||0)*30;
+        if(progress.coins >= cost && (progress.upgrades[key]||0) < 20) {
+          progress.coins -= cost;
+          progress.upgrades[key] = (progress.upgrades[key]||0) + 1;
+          saveProgress(progress);
+          updateMenus();
+        }
+      });
+      upList.appendChild(div);
     });
+    // achievements
+    const achList = document.getElementById('achievementList');
+    achList.innerHTML = progress.achievements.map(a => `<div>🏅 ${a}</div>`).join('') || '<div>No achievements yet</div>';
+  }
 
-    document.addEventListener('keydown', (e) => {
-      if (e.key === ' ' || e.key === 'Space') {
-        e.preventDefault();
-        performPunch();
-      }
+  function checkAchievements() {
+    const a = progress.achievements;
+    if(progress.totalWins>=1 && !a.includes('First Victory')) { a.push('First Victory'); saveProgress(progress); }
+    if(progress.totalKO>=1 && !a.includes('First Knockout')) { a.push('First Knockout'); saveProgress(progress); }
+    if(progress.totalWins>=10 && !a.includes('10 Wins')) { a.push('10 Wins'); saveProgress(progress); }
+    if(progress.totalWins>=25 && !a.includes('25 Wins')) { a.push('25 Wins'); saveProgress(progress); }
+    if(progress.totalWins>=50 && !a.includes('50 Wins')) { a.push('50 Wins'); saveProgress(progress); }
+    if(progress.totalWins>=100 && !a.includes('100 Wins')) { a.push('100 Wins'); saveProgress(progress); }
+    if(player.maxCombo>=10 && !a.includes('10 Combo')) { a.push('10 Combo'); saveProgress(progress); }
+    if(player.maxCombo>=20 && !a.includes('20 Combo')) { a.push('20 Combo'); saveProgress(progress); }
+    if(player.maxCombo>=50 && !a.includes('50 Combo')) { a.push('50 Combo'); saveProgress(progress); }
+    if(currentLevel>=50 && !a.includes('Halfway Champion')) { a.push('Halfway Champion'); saveProgress(progress); }
+    if(currentLevel>=100 && !a.includes('Ultimate Champion')) { a.push('Ultimate Champion'); saveProgress(progress); }
+    if(getStars()===3 && !a.includes('Three Star Fighter')) { a.push('Three Star Fighter'); saveProgress(progress); }
+    updateMenus();
+  }
+
+  // ---- LOOP ----
+  function loop(time) {
+    const dt = Math.min(0.05, (time - lastTime) / 1000);
+    lastTime = time;
+    if(gameState === 'fight') update(dt);
+    draw();
+    frameId = requestAnimationFrame(loop);
+  }
+
+  // ---- EVENT BINDING ----
+  function bindUI() {
+    document.getElementById('playBtn').addEventListener('click', ()=>{
+      initFight(progress.maxLevel || 1);
     });
-
-    resetBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      fullReset();
+    document.getElementById('levelSelectBtn').addEventListener('click', ()=>{ showMenu('levelSelectMenu'); updateMenus(); });
+    document.getElementById('upgradeBtn').addEventListener('click', ()=>{ showMenu('upgradeMenu'); updateMenus(); });
+    document.getElementById('achievementBtn').addEventListener('click', ()=>{ showMenu('achievementMenu'); updateMenus(); });
+    document.getElementById('backFromLevels').addEventListener('click', ()=>showMenu('mainMenu'));
+    document.getElementById('backFromUpgrade').addEventListener('click', ()=>showMenu('mainMenu'));
+    document.getElementById('backFromAchievement').addEventListener('click', ()=>showMenu('mainMenu'));
+    document.getElementById('resumeBtn').addEventListener('click', ()=>{ gameState='fight'; hideAllMenus(); });
+    document.getElementById('restartBtn').addEventListener('click', ()=>{ initFight(currentLevel); });
+    document.getElementById('quitBtn').addEventListener('click', ()=>{ gameState='menu'; showMenu('mainMenu'); updateMenus(); });
+    document.getElementById('nextLevelBtn').addEventListener('click', ()=>{
+      if(currentLevel < 100) initFight(currentLevel+1);
+      else { gameState='menu'; showMenu('championScreen'); document.getElementById('championStats').innerHTML = `FINAL SCORE: ${player.score}<br>TOTAL WINS: ${progress.totalWins}<br>HIGHEST COMBO: ${progress.bestCombo}`; }
     });
-
-    canvas.addEventListener('click', (e) => {
-      e.preventDefault();
-      performPunch();
+    document.getElementById('victoryLevelSelectBtn').addEventListener('click', ()=>{ showMenu('levelSelectMenu'); updateMenus(); });
+    document.getElementById('victoryMainBtn').addEventListener('click', ()=>{ gameState='menu'; showMenu('mainMenu'); updateMenus(); });
+    document.getElementById('retryBtn').addEventListener('click', ()=>{ initFight(currentLevel); });
+    document.getElementById('defeatLevelSelectBtn').addEventListener('click', ()=>{ showMenu('levelSelectMenu'); updateMenus(); });
+    document.getElementById('defeatMainBtn').addEventListener('click', ()=>{ gameState='menu'; showMenu('mainMenu'); updateMenus(); });
+    document.getElementById('championMainBtn').addEventListener('click', ()=>{ gameState='menu'; showMenu('mainMenu'); updateMenus(); });
+    // touch controls
+    document.getElementById('btnJab').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerAttack('jab'); });
+    document.getElementById('btnCross').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerAttack('cross'); });
+    document.getElementById('btnHook').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerAttack('hook'); });
+    document.getElementById('btnUppercut').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerAttack('uppercut'); });
+    document.getElementById('btnSpecial').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerAttack('special'); });
+    document.getElementById('btnBlock').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerBlock(); });
+    document.getElementById('btnBlock').addEventListener('pointerup', (e)=>{ player.block=false; });
+    document.getElementById('btnDodge').addEventListener('pointerdown', (e)=>{ e.preventDefault(); playerDodge(); });
+    // keyboard
+    document.addEventListener('keydown', (e)=>{
+      if(e.key===' '){ e.preventDefault(); playerBlock(); }
+      if(e.key==='a'){ e.preventDefault(); playerAttack('jab'); }
+      if(e.key==='d'){ e.preventDefault(); playerAttack('cross'); }
+      if(e.key==='q'){ e.preventDefault(); playerAttack('hook'); }
+      if(e.key==='e'){ e.preventDefault(); playerAttack('uppercut'); }
+      if(e.key==='f'){ e.preventDefault(); playerAttack('heavy'); }
+      if(e.key==='p'){ if(gameState==='fight'){ gameState='paused'; showMenu('pauseMenu'); } }
+      if(e.key==='ArrowLeft'){ e.preventDefault(); playerDodge(); }
+      if(e.key==='ArrowRight'){ e.preventDefault(); playerDodge(); }
     });
-    canvas.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      performPunch();
-    }, { passive: false });
+    document.addEventListener('keyup', (e)=>{
+      if(e.key===' ') player.block=false;
+    });
+    // pause on blur
+    document.addEventListener('visibilitychange', ()=>{
+      if(document.hidden && gameState==='fight') { gameState='paused'; showMenu('pauseMenu'); }
+    });
+  }
 
-    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    // ----- INIT -----
-    function init() {
-      state.opponentHits = 0;
-      state.opponent.speed = getLevelSpeed(1);
-      state.opponent.radius = getOpponentRadius(1);
-      resetMatch();
-      levelSpan.textContent = 1;
-      if (state.animFrame) cancelAnimationFrame(state.animFrame);
-      gameLoop();
-    }
-
-    init();
-  })();
+  // ---- START ----
+  bindUI();
+  showMenu('mainMenu');
+  updateMenus();
+  lastTime = performance.now();
+  loop(lastTime);
+})();
 </script>
 </body>
 </html>

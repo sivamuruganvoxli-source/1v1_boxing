@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>🥊 100 Level Boxing</title>
+  <title>🥊 1v1 Boxing · 100 Levels</title>
   <style>
     * {
       box-sizing: border-box;
@@ -192,7 +192,7 @@
   <div class="controls">
     <button class="punch-btn" id="punchBtn">👊 PUNCH</button>
   </div>
-  <div class="footer-note">▼ tap punch or press SPACE · 100 levels</div>
+  <div class="footer-note">▼ tap punch or press SPACE · 1v1 · 100 levels</div>
 </div>
 
 <script>
@@ -205,78 +205,87 @@
     const punchBtn = document.getElementById('punchBtn');
     const resetBtn = document.getElementById('resetBtn');
 
-    // ----- GAME STATE -----
+    // ----- GAME STATE (1v1) -----
     const state = {
       level: 1,
-      // opponent
-      opponentX: 270,        // fixed x (right side)
-      opponentY: 220,        // base y
-      opponentRadius: 38,
-      opponentSpeed: 1.8,    // will scale with level
-      opponentDirection: 1,  // 1 = down, -1 = up
-      // player
-      playerX: 120,
-      playerY: 240,
-      playerRadius: 32,
-      // punch
-      isPunching: false,
-      punchTimer: 0,
-      punchCooldown: 0,
-      // hit & block
-      hitCount: 0,
-      blockCount: 0,        // consecutive blocks (for difficulty)
-      isHitCooldown: false,
-      hitCooldownTimer: 0,
-      // game status
+      // ----- PLAYER (left) -----
+      player: {
+        x: 120,
+        y: 240,
+        radius: 32,
+        // punch state
+        isPunching: false,
+        punchTimer: 0,
+        punchCooldown: 0,
+        hitCount: 0,          // hits landed on opponent (need 3 to level up)
+        isHitStun: false,     // got hit by opponent
+        hitStunTimer: 0,
+      },
+      // ----- OPPONENT (right) -----
+      opponent: {
+        x: 270,
+        y: 220,
+        radius: 38,
+        speed: 1.8,
+        direction: 1,         // 1 = down, -1 = up
+        isPunching: false,    // opponent punch animation
+        punchTimer: 0,
+        isHitStun: false,
+        hitStunTimer: 0,
+      },
+      // ----- global -----
       gameOver: false,
       win: false,
-      // animation
       animFrame: null,
     };
 
     // ----- CONSTANTS -----
     const MAX_LEVEL = 100;
     const BASE_SPEED = 1.8;
-    const PUNCH_DURATION = 12;      // frames
-    const PUNCH_COOLDOWN_MAX = 18;  // frames
-    const HIT_COOLDOWN_MAX = 25;    // frames (invincibility after hit)
+    const PUNCH_DURATION = 12;
+    const PUNCH_COOLDOWN_MAX = 18;
+    const HIT_STUN_MAX = 18;        // frames stunned after hit
 
-    // ----- HELPER FUNCTIONS -----
+    // ----- HELPERS -----
     function getLevelSpeed(level) {
-      // difficulty scales: speed + extra aggression, but capped so it's still playable
-      return Math.min(BASE_SPEED + (level - 1) * 0.26, 6.5);
+      return Math.min(BASE_SPEED + (level - 1) * 0.28, 7.0);
     }
 
     function getOpponentRadius(level) {
-      // slightly bigger opponents at higher levels? but keep reasonable
-      return Math.min(38 + Math.floor(level / 25), 46);
+      return Math.min(38 + Math.floor(level / 20), 46);
     }
 
-    // reset match (keeps level)
+    // ----- RESET MATCH (keep level) -----
     function resetMatch() {
-      state.opponentY = 220;
-      state.opponentDirection = 1;
-      state.isPunching = false;
-      state.punchTimer = 0;
-      state.punchCooldown = 0;
-      state.hitCount = 0;
-      state.blockCount = 0;
-      state.isHitCooldown = false;
-      state.hitCooldownTimer = 0;
+      const p = state.player;
+      const o = state.opponent;
+      p.y = 240;
+      p.isPunching = false;
+      p.punchTimer = 0;
+      p.punchCooldown = 0;
+      p.hitCount = 0;
+      p.isHitStun = false;
+      p.hitStunTimer = 0;
+
+      o.y = 220;
+      o.direction = 1;
+      o.isPunching = false;
+      o.punchTimer = 0;
+      o.isHitStun = false;
+      o.hitStunTimer = 0;
+      o.speed = getLevelSpeed(state.level);
+      o.radius = getOpponentRadius(state.level);
+
       state.gameOver = false;
       state.win = false;
-      state.opponentSpeed = getLevelSpeed(state.level);
-      state.opponentRadius = getOpponentRadius(state.level);
-      // update ui
-      updateStatusText('Ready', '👊');
       punchBtn.disabled = false;
+      updateStatusText('Fight!', '🥊');
       levelSpan.textContent = state.level;
     }
 
-    // next level
+    // ----- NEXT LEVEL -----
     function goToNextLevel() {
       if (state.level >= MAX_LEVEL) {
-        // you win the game!
         state.gameOver = true;
         state.win = true;
         updateStatusText('🏆 CHAMPION!', '🏆');
@@ -284,185 +293,226 @@
         return;
       }
       state.level += 1;
-      state.opponentSpeed = getLevelSpeed(state.level);
-      state.opponentRadius = getOpponentRadius(state.level);
-      resetMatch(); // resets positions & cooldowns
+      const o = state.opponent;
+      o.speed = getLevelSpeed(state.level);
+      o.radius = getOpponentRadius(state.level);
+      resetMatch();
       levelSpan.textContent = state.level;
-      // extra UI feedback
       updateStatusText(`Level ${state.level}`, '⚡');
     }
 
-    // Player punches
+    // ----- PLAYER PUNCH -----
     function performPunch() {
+      const p = state.player;
       if (state.gameOver) return;
-      if (state.isPunching) return;
-      if (state.punchCooldown > 0) return;
-      if (state.isHitCooldown) return; // can't punch while hit stun
+      if (p.isPunching) return;
+      if (p.punchCooldown > 0) return;
+      if (p.isHitStun) return;
 
       // initiate punch
-      state.isPunching = true;
-      state.punchTimer = PUNCH_DURATION;
-      state.punchCooldown = PUNCH_COOLDOWN_MAX;
-      punchBtn.disabled = true; // will be re-enabled after punch
+      p.isPunching = true;
+      p.punchTimer = PUNCH_DURATION;
+      p.punchCooldown = PUNCH_COOLDOWN_MAX;
+      punchBtn.disabled = true;
 
-      // check if opponent is in range (collision detection)
-      const dx = state.opponentX - state.playerX;
-      const dy = state.opponentY - state.playerY;
+      // collision check vs opponent
+      const o = state.opponent;
+      const dx = o.x - p.x;
+      const dy = o.y - p.y;
       const dist = Math.sqrt(dx*dx + dy*dy);
-      const hitThreshold = state.playerRadius + state.opponentRadius - 6; // slight forgiveness
+      const threshold = p.radius + o.radius - 6;
 
-      if (dist < hitThreshold) {
-        // HIT!
-        state.hitCount++;
-        state.blockCount = 0; // reset block streak
+      if (dist < threshold && !o.isHitStun) {
+        // HIT LANDED!
+        p.hitCount++;
+        o.isHitStun = true;
+        o.hitStunTimer = HIT_STUN_MAX;
+        // push opponent
+        o.y += 18 * o.direction;
 
-        // increase difficulty by making opponent faster if they get hit (but cap)
-        state.opponentSpeed = Math.min(state.opponentSpeed + 0.25, 7.2);
+        updateStatusText(`👊 Hit ${p.hitCount}/3`, '💥');
 
-        // if hit count reaches 3 → level up!
-        if (state.hitCount >= 3) {
+        if (p.hitCount >= 3) {
           goToNextLevel();
-          return; // level up resets everything
-        } else {
-          // opponent flashes / gets pushed back
-          state.opponentY += 20 * state.opponentDirection; // small push
-          // update status
-          updateStatusText(`👊 Hit ${state.hitCount}/3`, '💥');
-          // small cooldown for opponent (prevent immediate hit)
-          state.isHitCooldown = true;
-          state.hitCooldownTimer = HIT_COOLDOWN_MAX;
+          return;
         }
+        // increase opponent speed slightly on hit
+        o.speed = Math.min(o.speed + 0.25, 7.5);
       } else {
-        // miss
-        state.blockCount++;
+        // MISS
         updateStatusText('Miss!', '😤');
-        // if too many misses, opponent gets faster (punish)
-        if (state.blockCount >= 4) {
-          state.opponentSpeed = Math.min(state.opponentSpeed + 0.3, 7.0);
-          state.blockCount = 0;
-          updateStatusText('Speed up!', '🔥');
-        }
+        // if opponent not in hitstun, they may counter-punch? (AI will handle)
       }
     }
 
-    // UI update
-    function updateStatusText(text, emoji = '👊') {
-      statusText.textContent = text;
-      statusEmoji.textContent = emoji || '👊';
-    }
+    // ----- OPPONENT AI (1v1) -----
+    function updateOpponentAI() {
+      const o = state.opponent;
+      const p = state.player;
+      if (state.gameOver) return;
+      if (o.isHitStun) return;
 
-    // ----- UPDATE LOOP (called each frame) -----
-    function updateGame() {
-      if (state.gameOver) {
-        // keep drawing, no updates
-        return;
+      // movement: seek player's y with some randomness
+      const targetY = p.y + (Math.random() - 0.5) * 40;
+      const diff = targetY - o.y;
+      const moveSpeed = o.speed * 0.7;
+
+      if (Math.abs(diff) > 15) {
+        o.y += Math.sign(diff) * Math.min(Math.abs(diff) * 0.12, moveSpeed);
+      } else {
+        // random drift
+        o.y += (Math.random() - 0.5) * 0.8;
       }
 
-      // cooldown timers
-      if (state.punchCooldown > 0) {
-        state.punchCooldown--;
-        if (state.punchCooldown === 0) {
-          punchBtn.disabled = false;
-        }
-      }
+      // boundaries
+      o.y = Math.max(70, Math.min(400, o.y));
 
-      if (state.isHitCooldown) {
-        state.hitCooldownTimer--;
-        if (state.hitCooldownTimer <= 0) {
-          state.isHitCooldown = false;
-        }
-      }
+      // opponent punch AI: randomly punch if close enough and not punching
+      if (!o.isPunching && !p.isHitStun) {
+        const dx = o.x - p.x;
+        const dy = o.y - p.y;
+        const dist = Math.sqrt(dx*dx + dy*dy);
+        const threshold = o.radius + p.radius + 10;
 
-      // punch timer
-      if (state.isPunching) {
-        state.punchTimer--;
-        if (state.punchTimer <= 0) {
-          state.isPunching = false;
-          // re-enable button if cooldown already 0
-          if (state.punchCooldown === 0) {
-            punchBtn.disabled = false;
+        // punch chance increases with level and proximity
+        const punchChance = Math.min(0.018 + (state.level * 0.0015), 0.09);
+        if (dist < threshold && Math.random() < punchChance) {
+          // opponent punches!
+          o.isPunching = true;
+          o.punchTimer = PUNCH_DURATION;
+
+          // check if it hits player
+          if (dist < o.radius + p.radius - 4 && !p.isHitStun) {
+            // opponent lands a hit!
+            p.isHitStun = true;
+            p.hitStunTimer = HIT_STUN_MAX;
+            updateStatusText('💀 Ouch!', '💢');
+            // if player gets hit, reset hit count? (punishment)
+            p.hitCount = Math.max(0, p.hitCount - 1);
+            if (p.hitCount < 0) p.hitCount = 0;
+            // push player
+            p.y += 15 * (p.y < o.y ? -1 : 1);
+            // if player gets hit too many times? we'll make it a loss if hit while already low
+            // but we want 1v1 feel: 3 hits to win, but if opponent lands 3 hits you lose?
+            // we track a "health" concept: each hit reduces player's progress
+            // we'll use a simple: if opponent hits you 3 times (total) you lose.
+            // we'll track opponentHits
+            if (!state.opponentHits) state.opponentHits = 0;
+            state.opponentHits = (state.opponentHits || 0) + 1;
+            if (state.opponentHits >= 3) {
+              state.gameOver = true;
+              state.win = false;
+              updateStatusText('💀 KO!', '💀');
+              punchBtn.disabled = true;
+            }
           }
         }
       }
 
-      // ----- OPPONENT AI movement -----
-      // only move if not game over and not hit cooldown (stunned)
-      if (!state.isHitCooldown) {
-        // move up/down
-        state.opponentY += state.opponentSpeed * state.opponentDirection * 0.6;
-
-        // boundaries (with padding)
-        const minY = 80;
-        const maxY = 380;
-        if (state.opponentY < minY) {
-          state.opponentY = minY;
-          state.opponentDirection = 1;
-        } else if (state.opponentY > maxY) {
-          state.opponentY = maxY;
-          state.opponentDirection = -1;
-        }
-
-        // random direction change (adds unpredictability) higher level = more changes
-        if (Math.random() < 0.008 + (state.level * 0.0006)) {
-          state.opponentDirection *= -1;
+      // opponent punch timer
+      if (o.isPunching) {
+        o.punchTimer--;
+        if (o.punchTimer <= 0) {
+          o.isPunching = false;
         }
       }
-
-      // If opponent hits player (collision) → lose condition (only if not in hit cooldown)
-      if (!state.isHitCooldown && !state.gameOver) {
-        const dx = state.opponentX - state.playerX;
-        const dy = state.opponentY - state.playerY;
-        const dist = Math.sqrt(dx*dx + dy*dy);
-        const threshold = state.playerRadius + state.opponentRadius - 8;
-        if (dist < threshold) {
-          // opponent lands a hit → game over (loss)
-          state.gameOver = true;
-          state.win = false;
-          updateStatusText('💀 KO!', '💀');
-          punchBtn.disabled = true;
-        }
-      }
-
-      // if win condition (level 100 completed) already handled in goToNextLevel
     }
 
-    // ----- DRAWING -----
+    // ----- UPDATE LOOP -----
+    function updateGame() {
+      if (state.gameOver) return;
+
+      const p = state.player;
+      const o = state.opponent;
+
+      // player cooldowns
+      if (p.punchCooldown > 0) {
+        p.punchCooldown--;
+        if (p.punchCooldown === 0) {
+          if (!p.isPunching) punchBtn.disabled = false;
+        }
+      }
+      if (p.isPunching) {
+        p.punchTimer--;
+        if (p.punchTimer <= 0) {
+          p.isPunching = false;
+          if (p.punchCooldown === 0) punchBtn.disabled = false;
+        }
+      }
+      if (p.isHitStun) {
+        p.hitStunTimer--;
+        if (p.hitStunTimer <= 0) p.isHitStun = false;
+      }
+
+      // opponent stun
+      if (o.isHitStun) {
+        o.hitStunTimer--;
+        if (o.hitStunTimer <= 0) {
+          o.isHitStun = false;
+        }
+      }
+
+      // opponent AI
+      updateOpponentAI();
+
+      // boundary for player (optional)
+      p.y = Math.max(70, Math.min(400, p.y));
+    }
+
+    // ----- DRAWING (1v1) -----
     function draw() {
       ctx.clearRect(0, 0, 400, 480);
 
-      // ---- ring decorations ----
-      ctx.shadowColor = 'rgba(0,0,0,0.5)';
-      ctx.shadowBlur = 12;
+      const p = state.player;
+      const o = state.opponent;
 
-      // player (left)
+      // ---- shadows ----
+      ctx.shadowColor = 'rgba(0,0,0,0.5)';
+      ctx.shadowBlur = 14;
+
+      // ---- PLAYER (left) ----
       ctx.beginPath();
-      ctx.arc(state.playerX, state.playerY, state.playerRadius, 0, Math.PI*2);
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI*2);
       ctx.fillStyle = '#2d7eb0';
       ctx.shadowBlur = 18;
       ctx.fill();
       ctx.strokeStyle = '#b4d9f0';
       ctx.lineWidth = 3;
       ctx.stroke();
-      // face
+
+      // player face
       ctx.beginPath();
-      ctx.arc(state.playerX-8, state.playerY-6, 6, 0, Math.PI*2);
+      ctx.arc(p.x-8, p.y-6, 6, 0, Math.PI*2);
       ctx.fillStyle = '#f5e6d3';
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(state.playerX+8, state.playerY-6, 6, 0, Math.PI*2);
+      ctx.arc(p.x+8, p.y-6, 6, 0, Math.PI*2);
       ctx.fill();
       ctx.fillStyle = '#1f1f2e';
       ctx.beginPath();
-      ctx.arc(state.playerX-10, state.playerY-10, 3, 0, Math.PI*2);
+      ctx.arc(p.x-10, p.y-10, 3, 0, Math.PI*2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(state.playerX+6, state.playerY-10, 3, 0, Math.PI*2);
+      ctx.arc(p.x+6, p.y-10, 3, 0, Math.PI*2);
       ctx.fill();
 
-      // opponent (right)
+      // player punch effect
+      if (p.isPunching) {
+        ctx.shadowBlur = 30;
+        ctx.beginPath();
+        ctx.arc(p.x + 40, p.y - 2, 18, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255, 220, 80, 0.6)';
+        ctx.fill();
+        ctx.fillStyle = 'rgba(255, 180, 40, 0.8)';
+        ctx.beginPath();
+        ctx.arc(p.x + 48, p.y - 4, 12, 0, Math.PI*2);
+        ctx.fill();
+      }
+
+      // ---- OPPONENT (right) ----
       ctx.shadowBlur = 16;
       ctx.beginPath();
-      ctx.arc(state.opponentX, state.opponentY, state.opponentRadius, 0, Math.PI*2);
+      ctx.arc(o.x, o.y, o.radius, 0, Math.PI*2);
       ctx.fillStyle = '#b83b3b';
       ctx.fill();
       ctx.strokeStyle = '#e07a7a';
@@ -471,44 +521,67 @@
 
       // opponent face
       ctx.beginPath();
-      ctx.arc(state.opponentX-8, state.opponentY-6, 7, 0, Math.PI*2);
+      ctx.arc(o.x-8, o.y-6, 7, 0, Math.PI*2);
       ctx.fillStyle = '#d9b8a0';
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(state.opponentX+8, state.opponentY-6, 7, 0, Math.PI*2);
+      ctx.arc(o.x+8, o.y-6, 7, 0, Math.PI*2);
       ctx.fill();
       ctx.fillStyle = '#1f1f2e';
       ctx.beginPath();
-      ctx.arc(state.opponentX-10, state.opponentY-10, 3, 0, Math.PI*2);
+      ctx.arc(o.x-10, o.y-10, 3, 0, Math.PI*2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(state.opponentX+6, state.opponentY-10, 3, 0, Math.PI*2);
+      ctx.arc(o.x+6, o.y-10, 3, 0, Math.PI*2);
       ctx.fill();
 
-      // ---- punch effect ----
-      if (state.isPunching) {
+      // opponent punch effect
+      if (o.isPunching) {
         ctx.shadowBlur = 30;
         ctx.beginPath();
-        ctx.arc(state.playerX + 40, state.playerY - 2, 18, 0, Math.PI*2);
-        ctx.fillStyle = 'rgba(255, 220, 80, 0.6)';
+        ctx.arc(o.x - 40, o.y - 2, 18, 0, Math.PI*2);
+        ctx.fillStyle = 'rgba(255, 100, 70, 0.6)';
         ctx.fill();
-        ctx.fillStyle = 'rgba(255, 180, 40, 0.8)';
+        ctx.fillStyle = 'rgba(255, 80, 40, 0.8)';
         ctx.beginPath();
-        ctx.arc(state.playerX + 48, state.playerY - 4, 12, 0, Math.PI*2);
+        ctx.arc(o.x - 48, o.y - 4, 12, 0, Math.PI*2);
         ctx.fill();
       }
 
-      // hit cooldown indicator (on opponent)
-      if (state.isHitCooldown) {
+      // hit stun indicators
+      if (p.isHitStun) {
         ctx.shadowBlur = 25;
         ctx.beginPath();
-        ctx.arc(state.opponentX, state.opponentY, state.opponentRadius+6, 0, Math.PI*2);
+        ctx.arc(p.x, p.y, p.radius+6, 0, Math.PI*2);
+        ctx.strokeStyle = '#ff6644';
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+      if (o.isHitStun) {
+        ctx.shadowBlur = 25;
+        ctx.beginPath();
+        ctx.arc(o.x, o.y, o.radius+6, 0, Math.PI*2);
         ctx.strokeStyle = '#ffdd44';
         ctx.lineWidth = 4;
         ctx.stroke();
       }
 
-      // game over overlay
+      // ---- UI on canvas ----
+      ctx.shadowBlur = 10;
+      ctx.font = 'bold 17px monospace';
+      ctx.fillStyle = '#dbeef5';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Lv.${state.level}`, 14, 38);
+      ctx.fillStyle = '#b3d6e0';
+      const hits = state.player.hitCount;
+      ctx.fillText(`👊 ${hits}/3`, 14, 66);
+      // opponent hits
+      const oppHits = state.opponentHits || 0;
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#f5b0b0';
+      ctx.fillText(`💢 ${oppHits}/3`, 386, 66);
+
+      // game over
       if (state.gameOver) {
         ctx.shadowBlur = 20;
         ctx.font = 'bold 38px "Segoe UI", system-ui';
@@ -519,41 +592,39 @@
         ctx.fillText(state.win ? '🏆 WINNER' : '💀 LOST', 200, 80);
         ctx.font = 'bold 22px sans-serif';
         ctx.fillStyle = '#ebf5f0';
-        ctx.fillText(state.win ? 'You are the champion!' : 'Press Reset', 200, 140);
+        ctx.fillText(state.win ? 'Champion!' : 'Press Reset', 200, 140);
       }
-
-      // level display on canvas
-      ctx.shadowBlur = 10;
-      ctx.font = 'bold 18px monospace';
-      ctx.fillStyle = '#dbeef5';
-      ctx.textAlign = 'left';
-      ctx.fillText(`Lv.${state.level}`, 16, 40);
-      ctx.fillStyle = '#b3d6e0';
-      ctx.fillText(`❤️ ${3 - state.hitCount} hits left`, 16, 68);
 
       ctx.shadowBlur = 0;
     }
 
-    // ----- ANIMATION LOOP -----
+    // ----- GAME LOOP -----
     function gameLoop() {
       updateGame();
       draw();
       state.animFrame = requestAnimationFrame(gameLoop);
     }
 
-    // ----- RESET (full) -----
+    // ----- FULL RESET -----
     function fullReset() {
-      // reset level to 1
       state.level = 1;
-      state.opponentSpeed = getLevelSpeed(1);
-      state.opponentRadius = getOpponentRadius(1);
+      state.opponentHits = 0;
+      const o = state.opponent;
+      o.speed = getLevelSpeed(1);
+      o.radius = getOpponentRadius(1);
       resetMatch();
       levelSpan.textContent = 1;
       updateStatusText('Reset', '🔄');
       punchBtn.disabled = false;
-      // clear any game over
       state.gameOver = false;
       state.win = false;
+      state.opponentHits = 0;
+    }
+
+    // ----- UI UPDATE -----
+    function updateStatusText(text, emoji) {
+      statusText.textContent = text;
+      statusEmoji.textContent = emoji || '👊';
     }
 
     // ----- EVENT LISTENERS -----
@@ -562,7 +633,6 @@
       performPunch();
     });
 
-    // keyboard support
     document.addEventListener('keydown', (e) => {
       if (e.key === ' ' || e.key === 'Space') {
         e.preventDefault();
@@ -575,10 +645,6 @@
       fullReset();
     });
 
-    // Prevent context menu on long press (mobile)
-    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
-
-    // touch support for canvas (punch on tap)
     canvas.addEventListener('click', (e) => {
       e.preventDefault();
       performPunch();
@@ -588,10 +654,13 @@
       performPunch();
     }, { passive: false });
 
+    canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
     // ----- INIT -----
     function init() {
-      state.opponentSpeed = getLevelSpeed(1);
-      state.opponentRadius = getOpponentRadius(1);
+      state.opponentHits = 0;
+      state.opponent.speed = getLevelSpeed(1);
+      state.opponent.radius = getOpponentRadius(1);
       resetMatch();
       levelSpan.textContent = 1;
       if (state.animFrame) cancelAnimationFrame(state.animFrame);
